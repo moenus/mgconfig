@@ -1,0 +1,54 @@
+Metadata-Version: 2.4
+Name: mgconfig
+Version: 0.1
+Summary: A lightweight Python configuration system driven by declarative YAML definitions
+Author: Michael Gross
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: tzlocal<6.0,>=5.0
+Requires-Dist: python-dotenv<2.0,>=1.0.0
+Requires-Dist: PyYAML<7.0,>=6.0
+Dynamic: author
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# Python Package mgconfig
+
+**mgconfig** is a lightweight Python configuration system driven by declarative YAML definitions.  
+### Features
+
+- Declarative YAML configuration schema
+- Default values (static or dynamic via functions)
+- Programmatic defaults for application metadata
+- Environment variable overrides
+- Strongly typed parsing, validation, and display
+- Hierarchical sections and namespace prefixes for avoiding collisions
+- Programmatic API for setting defaults
+- Extensible with custom default functions
+
+---
+
+## Installation
+
+```bash
+# From source (assuming you're in the repository root)
+pip install -e .
+
+# Or install runtime dependencies if not using an editable install
+pip install tzlocal python-dotenv
+
+``` 
+---
+
+
+## Dependencies
+- tzlocal â€” for determining the local timezone
+
+- python-dotenv â€” for loading .env files during development
+
+Python 3.7+ recommended
+
+

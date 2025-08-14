@@ -1,0 +1,18 @@
+# mgconfig configuration definitions 
+# for testing the config types 
+
+- section: test-definitions
+  prefix: tst
+  configs:
+
+  - name: seconds
+    type: seconds
+    default: 60
+
+  - name: minutes
+    type: minutes
+    default: 30
+
+  - name: filename
+    type: filename
+    default: abdc.json

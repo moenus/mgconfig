@@ -1,0 +1,105 @@
+# mgconfig configuration definitions 
+# for external servers and clients 
+# like databases, smtp server, mqtt server, web clients
+
+- section: web-ui
+  prefix: web
+  configs:
+
+  - name: adresses
+    type: str
+    default: 0.0.0.0
+    description: adresses to listen on.
+    # comment: Set this to "0.0.0.0" to have the server available externally as well
+
+  - name: port
+    type: int
+    default: 5070
+    description: port to listen on
+
+  - name: password
+    type: secret
+    description: password which protects the html user interface
+
+  - name: timeout
+    type: minutes
+    description: session timeout which protects the html user interface
+
+- section: database
+  prefix: db
+  configs:
+
+  - name: host
+    type: str
+    default: localhost
+    description: hostname or IP adress of database server
+
+  - name: port
+    type: int
+    default: 3306
+    description: port of database server
+
+  - name: dbname
+    type: str
+    description: database name
+
+  - name: username
+    type: str
+    description: user name of database user
+
+  - name: password
+    type: secret
+    description: password of database user
+
+- section: smtp
+  prefix: smtp
+  configs:
+
+  - name: host
+    type: str
+    default: localhost
+    description: hostname or IP adress of smtp server
+
+  - name: port
+    type: int
+    default: 587
+    description: port of smtp server
+
+  - name: username
+    type: str
+    description: user name of smtp user
+
+  - name: password
+    type: secret
+    description: password of smtp user
+
+  - name: sender
+    type: str
+    description: sender email adress of smtp user
+
+- section: mqtt
+  prefix: mqtt
+  configs:
+
+  - name: host
+    type: str
+    default: localhost
+    description: hostname or IP adress of mqtt server
+
+  - name: port
+    type: int
+    default: 1883
+    description: port of mqtt server
+
+  - name: username
+    type: str
+    description: user name of mqtt user
+
+  - name: password
+    type: secret
+    description: password of mqtt user
+
+  - name: basetopic
+    type: str
+    default: $(host_hostname)-$(app_prefix)
+    description: basetopic which is used for mqttt publish

@@ -1,0 +1,128 @@
+# configuration definitions for basic application configuration
+
+- section: application
+  prefix: app
+  configs:
+
+  - name: title
+    type: str
+    readonly: True
+    description: full title of the application (shown in web UI) (read only)
+
+  - name: name
+    type: str
+    readonly: True
+    description: name of the application (read only)
+
+  - name: version
+    type: str
+    readonly: True
+    description: version of the application (read only)
+
+  - name: prefix
+    type: str
+    readonly: True
+    description: abbreviation for the application which is used for URLs, file names, etc. (read only)
+
+  - name: basedir
+    type: path
+    readonly: True
+    default: /$(app_name)_data
+    env: DATA_DIRECTORY
+    description: base directory for application execution
+
+  - name: configdir
+    type: path
+    readonly: True
+    default: $(app_basedir)/configs
+    env: CONFIG_DIRECTORY
+    description: configuration directory (read only)
+
+  - name: configfile
+    type: path
+    readonly: True
+    default: $(app_configdir)/$(app_name)_config.yaml
+    env: CONFIGFILE
+    description: full pathname of configuration file (read only)
+
+  - name: keystore
+    type: path
+    readonly: True
+    default: '$(app_configdir)/$(app_name)_ks.json'
+    env: KEYSTORE_FILE
+    description: filepath of keystore
+
+  - name: masterkey
+    type: hidden
+    env: APP_KEY
+    readonly: True
+    description: master key for protection of secure key storage (read only) (never displayed)
+
+- section: host
+  prefix: host
+  configs:
+
+  - name: hostname
+    type: str
+    env: APP_HOSTNAME
+    default_function: hostname
+    description: hostname, which is used to identify the instance of the app
+
+  - name: timezone
+    type: str
+    env: TZ
+    default_function: timezone
+    description: timezone, which is used for timestamps and file datetimes
+
+- section: secure_store
+  prefix: sec
+  configs:
+
+  - name: securestore_file
+    type: path
+    readonly: True
+    default: '$(app_configdir)/$(app_name)_sec.json'
+    env: SECURESTORE_FILE
+    description: filepath of secure store file
+
+  - name: master_key_keystore
+    type: str
+    readonly: True
+    default: env
+    description:
+
+
+  - name: master_key_item_name
+    type: str
+    readonly: True
+    default: APP_KEY
+    description: item name for master key for protection of secure storage (read only) (never displayed)
+
+  - name: salt_key_keystore
+    type: str
+    readonly: True
+    default: keyring
+    description:
+
+
+  - name: salt_key_item_name
+    type: str
+    readonly: True
+    default: salt_key
+    description:
+
+
+  - name: keyring_service_name
+    type: str
+    readonly: True
+    env: KEYRING_SERVICE
+    default: mgconfig_test
+    description:
+
+
+  - name: keyfile_filepath
+    type: path
+    readonly: True
+    env: KEYFILE_PATH
+    default: $(app_name)
+    description:
