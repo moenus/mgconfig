@@ -14,4 +14,8 @@ setup(
         "PyYAML>=6.0,<7.0",
     ],
     python_requires='>=3.8',
+    extras_require={
+        "dev": ["pytest>=7.0", "black>=23.0"],
+        "docs": ["sphinx>=7.0"],
+    }
 )

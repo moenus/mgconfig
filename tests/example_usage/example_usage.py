@@ -1,4 +1,4 @@
-from mgconfig import Configuration, DefaultValues, PostProcessing, DefaultFunctions, ConfigTypes, ConstSections, configuration_logger
+from mgconfig import Configuration, DefaultValues, PostProcessing, DefaultFunctions, ConfigTypes, configuration_logger
 from ext_default_functions import default_hostname, default_timezone
 from ext_postprocessing import extend_timezone_configuration, LOCAL_TZ_ID
 from ext_config_types import parse_filename
@@ -9,10 +9,6 @@ CONFIG_DEFINITIONS_YAML = [
     "config_defs/config_def__app.yml",
     "config_defs/config_def__test.yml"
 ]
-
-
-ConstSections.define('HOST')
-ConstSections.set_prefix('HOST', 'host')
 
 
 # ---------------------------------------------------------------------

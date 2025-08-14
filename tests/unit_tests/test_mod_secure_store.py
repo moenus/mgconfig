@@ -30,15 +30,15 @@ Tests cover:
 
 class DummyKeyProvider:
     """Simple fake key provider for tests."""
-    def __init__(self, master_key=None, salt_key=None):
+    def __init__(self, master_key=None, salt=None):
         self._master_key = master_key or sm.bytes_to_b64str(os.urandom(sm.AES_KEY_SIZE))
-        self._salt_key = salt_key or sm.bytes_to_b64str(os.urandom(sm.AES_KEY_SIZE))
+        self._salt = salt or sm.bytes_to_b64str(os.urandom(sm.AES_KEY_SIZE))
 
     def get(self, keyname):
         if keyname == 'master_key':
             return self._master_key
-        elif keyname == 'salt_key':
-            return self._salt_key
+        elif keyname == 'salt':
+            return self._salt
         raise KeyError(f"No such key: {keyname}")
 
 
@@ -93,7 +93,7 @@ def test_save_and_read_from_file(store, tmp_secure_file):
     assert "foo" in data
     # New instance should load existing data
     kp = DummyKeyProvider(master_key=store.master_key_str,
-                          salt_key=sm.bytes_to_b64str(store._salt_key))
+                          salt=sm.bytes_to_b64str(store._salt))
     store2 = sm.SecureStore(tmp_secure_file, kp)
     assert store2.retrieve_secret("foo") == "bar"
 

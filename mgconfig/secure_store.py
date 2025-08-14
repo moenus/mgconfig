@@ -76,12 +76,12 @@ class SecureStore:
 
         Args:
             securestore_file (str): Path to the JSON secure store file.
-            key_provider (KeyProvider): Object providing the 'master_key' and 'salt_key'.
+            key_provider (KeyProvider): Object providing the 'master_key' and 'salt'.
         """
         self.securestore_file = securestore_file
         self.securestore = {}
         self._master_key = b64str_to_bytes(key_provider.get('master_key'))
-        self._salt_key = b64str_to_bytes(key_provider.get('salt_key'))
+        self._salt = b64str_to_bytes(key_provider.get('salt'))
         self._read_securestore_file()
         if self.securestore == {}:
             self.store_secret(CURRENT_MK_HASH, self.master_key_hash)
@@ -94,7 +94,7 @@ class SecureStore:
         Returns:
             bytes: The derived AES key of length AES_KEY_SIZE.
         """
-        h = hmac.HMAC(self._salt_key, hashes.SHA256(),
+        h = hmac.HMAC(self._salt, hashes.SHA256(),
                       backend=default_backend())
         h.update(self._master_key)
         salt = h.finalize()

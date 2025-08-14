@@ -188,17 +188,47 @@ class Configuration():
             setattr(self, config_id, config_value.value)
         return True
 
-    def get_new_masterkey(self) -> Any:
+    def get_new_masterkey(self) -> str:
         """
         Prepare a new master key from the secure value store.
+        This method interacts with the secure value store to generate 
+        and return a fresh master key.
+
+        Returns:
+            str: A newly generated master key.
         """
         return ValueStores.get(ValueStoreSecure).prepare_new_masterkey()
 
     def set_extended_item(self, name: str, value: Any):
+        """
+        Set or add an attribute to the extended object.
+
+        Args:
+            name (str): The name of the attribute to set.
+            value (Any): The value to assign to the attribute.
+        """
         setattr(self.extended, name, value)
 
-    def extended_item_exists(self, name: str):
+    def extended_item_exists(self, name: str) -> bool:
+        """
+        Check if an attribute exists in the extended object.
+
+        Args:
+            name (str): The name of the attribute to check.
+
+        Returns:
+            bool: True if the attribute exists, False otherwise.
+        """
         return hasattr(self.extended, name)
 
-    def get_extended_item(self, name: str):
+    def get_extended_item(self, name: str) -> Any:
+        """
+        Retrieve the value of an attribute from the extended object.
+
+        Args:
+            name (str): The name of the attribute to retrieve.
+
+        Returns:
+            Any: The value of the attribute if it exists, otherwise None.
+        """        
         return self.extended.__dict__.get(name)

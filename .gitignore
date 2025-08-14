@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+
+# VSCode
+.vscode/
+
+# Others
+.DS_Store
+instructions mg.txt

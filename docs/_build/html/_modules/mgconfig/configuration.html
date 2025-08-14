@@ -32,16 +32,18 @@
             
   <h1>Source code for mgconfig.configuration</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.configdef</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigDefs</span><span class="p">,</span> <span class="n">ConfigDef</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">.config_value</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigValue</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.value_store</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValueStoreFile</span><span class="p">,</span> <span class="n">ValueStoreSecure</span><span class="p">,</span> <span class="n">ValueStoreEnv</span><span class="p">,</span> <span class="n">ValueStoreDefault</span><span class="p">,</span> <span class="n">ConfigValueSource</span><span class="p">,</span> <span class="n">ValueStores</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.extension_system</span><span class="w"> </span><span class="kn">import</span> <span class="n">PostProcessing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
 
 <div class="viewcode-block" id="Configuration">
-<a class="viewcode-back" href="../../index.html#mgconfig.configuration.Configuration">[docs]</a>
+<a class="viewcode-back" href="../../api.html#mgconfig.configuration.Configuration">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Configuration</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; this class reperesents the configuration values which are defined in  </span>
 <span class="sd">        environment variables and a json configuration file. </span>
@@ -51,6 +53,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg_defs_filepaths</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_values</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extended</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cfg_def_dict</span> <span class="o">=</span> <span class="n">ConfigDefs</span><span class="p">(</span><span class="n">cfg_defs_filepaths</span><span class="p">)</span><span class="o">.</span><span class="n">config_defs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_configuration_values_initialization</span><span class="p">()</span>
 
@@ -139,7 +142,7 @@
         <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">,</span> <span class="n">config_value</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Configuration.get">
-<a class="viewcode-back" href="../../index.html#mgconfig.configuration.Configuration.get">[docs]</a>
+<a class="viewcode-back" href="../../api.html#mgconfig.configuration.Configuration.get">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fail_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the current value for a configuration ID.</span>
@@ -151,7 +154,7 @@
 
 
 <div class="viewcode-block" id="Configuration.get_config_value">
-<a class="viewcode-back" href="../../index.html#mgconfig.configuration.Configuration.get_config_value">[docs]</a>
+<a class="viewcode-back" href="../../api.html#mgconfig.configuration.Configuration.get_config_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fail_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigValue</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the ConfigValue object for a configuration ID.</span>
@@ -163,7 +166,7 @@
 
 
 <div class="viewcode-block" id="Configuration.get_cfg_def">
-<a class="viewcode-back" href="../../index.html#mgconfig.configuration.Configuration.get_cfg_def">[docs]</a>
+<a class="viewcode-back" href="../../api.html#mgconfig.configuration.Configuration.get_cfg_def">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_cfg_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fail_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ConfigDef</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the configuration definition for a configuration ID.</span>
@@ -171,7 +174,8 @@
         <span class="k">if</span> <span class="n">config_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg_def_dict</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg_def_dict</span><span class="p">[</span><span class="n">config_id</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">fail_on_error</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Configuration definition </span><span class="si">{</span><span class="n">config_id</span><span class="si">}</span><span class="s1"> not found.&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;Configuration definition </span><span class="si">{</span><span class="n">config_id</span><span class="si">}</span><span class="s1"> not found.&#39;</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
@@ -201,7 +205,7 @@
         <span class="k">return</span> <span class="n">data_table</span>
 
 <div class="viewcode-block" id="Configuration.save_new_value">
-<a class="viewcode-back" href="../../index.html#mgconfig.configuration.Configuration.save_new_value">[docs]</a>
+<a class="viewcode-back" href="../../api.html#mgconfig.configuration.Configuration.save_new_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save_new_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">apply_immediately</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save a new configuration value to the appropriate store.</span>
@@ -232,7 +236,7 @@
 
 
 <div class="viewcode-block" id="Configuration.get_new_masterkey">
-<a class="viewcode-back" href="../../index.html#mgconfig.configuration.Configuration.get_new_masterkey">[docs]</a>
+<a class="viewcode-back" href="../../api.html#mgconfig.configuration.Configuration.get_new_masterkey">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_new_masterkey</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepare a new master key from the secure value store.</span>
@@ -240,12 +244,22 @@
         <span class="k">return</span> <span class="n">ValueStores</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ValueStoreSecure</span><span class="p">)</span><span class="o">.</span><span class="n">prepare_new_masterkey</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="Configuration.set_adhoc_value">
-<a class="viewcode-back" href="../../index.html#mgconfig.configuration.Configuration.set_adhoc_value">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_adhoc_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_values</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> cannot be used as adhoc value name.&#39;</span><span class="p">)</span>
-        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Configuration.set_extended_item">
+<a class="viewcode-back" href="../../api.html#mgconfig.configuration.Configuration.set_extended_item">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_extended_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extended</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Configuration.extended_item_exists">
+<a class="viewcode-back" href="../../api.html#mgconfig.configuration.Configuration.extended_item_exists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extended_item_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extended</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Configuration.get_extended_item">
+<a class="viewcode-back" href="../../api.html#mgconfig.configuration.Configuration.get_extended_item">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_extended_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extended</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
@@ -279,6 +293,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../secure_store.html">🔐 Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../secure_store.html#key-storage-options">📦 Key Storage Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../secure_store.html#key-lifecycle-management">🔄 Key Lifecycle Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 </ul>
 
 <div class="relations">

@@ -1,5 +1,5 @@
 from example_usage.ext_app_header import AppHeader
-from mgconfig.helpers import ConstSections
+from mgconfig.helpers import lazy_build_config_id, section_APP
 from mgconfig.configdef import ConfigDefs
 from t_helpers import CONFIG_DEFINITIONS_YAML, set_app_header
 
@@ -9,7 +9,7 @@ def test_create_config_defs():
     set_app_header()
     header_dict = AppHeader.get_header()
     header_values = {
-        ConstSections.APP.build_id(key):
+        lazy_build_config_id(section_APP,key):
             value for key, value in header_dict.items()
     }
 

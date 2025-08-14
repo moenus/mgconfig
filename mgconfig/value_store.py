@@ -1,14 +1,14 @@
 import os
 import yaml
-from .helpers import logger,  ConstConfigs
+from .helpers import logger,  config_securestorefile, config_configfile
 from .secure_store import SecureStore
 from .key_provider import KeyProvider
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from enum import Enum
 
 
-config_configfile = ConstConfigs('configfile')
-config_securestorefile = ConstConfigs('securestore_file')
+# config_configfile = ConstConfigs('configfile')
+# config_securestorefile = ConstConfigs('securestore_file')
 
 
 class ConfigValueSource(str, Enum):
@@ -77,7 +77,7 @@ class ValueStoreSecure(ValueStore):
             logger.error(f'Cannot retrieve secret value for id {item_id}: {e}')
             return None, self.source
 
-    def prepare_new_masterkey(self):
+    def prepare_new_masterkey(self) ->str:
         try:
             secure_store = self._get_new_secure_store()
             new_masterkey_str = secure_store.prepare_auto_key_exchange()

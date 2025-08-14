@@ -13,10 +13,10 @@ from mgconfig.secure_store import (
 
 
 class DummyKeyProvider:
-    def __init__(self, master_key, salt_key):
+    def __init__(self, master_key, salt):
         self._keys = {
             "master_key": master_key,
-            "salt_key": salt_key
+            "salt": salt
         }
 
     def get(self, name):
@@ -26,8 +26,8 @@ class DummyKeyProvider:
 @pytest.fixture
 def secure_store(tmp_path):
     master_key = generate_key_str()
-    salt_key = generate_key_str()
-    kp = DummyKeyProvider(master_key, salt_key)
+    salt = generate_key_str()
+    kp = DummyKeyProvider(master_key, salt)
     store_file = tmp_path / "secure.json"
     return SecureStore(str(store_file), kp)
 
@@ -67,7 +67,7 @@ def test_save_and_reload(secure_store):
     new_store = SecureStore(secure_store.securestore_file,
                             DummyKeyProvider(
                                 secure_store.master_key_str,
-                                bytes_to_b64str(secure_store._salt_key)
+                                bytes_to_b64str(secure_store._salt)
                             ))
     assert new_store.retrieve_secret("foo") == "bar"
 
@@ -109,6 +109,6 @@ def test_tampering_detected_even_after_save_and_load(secure_store):
     # Reload store and test
     new_store = SecureStore(
         secure_store.securestore_file,
-        DummyKeyProvider(secure_store.master_key_str, bytes_to_b64str(secure_store._salt_key))
+        DummyKeyProvider(secure_store.master_key_str, bytes_to_b64str(secure_store._salt))
     )
     assert new_store.retrieve_secret("secret") is None

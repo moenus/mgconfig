@@ -1,4 +1,4 @@
-from .helpers import logger, ConstSections, ConstConfigs
+from .helpers import logger, ConstSection, ConstConfig, Section
 from .extension_system import DefaultValues, DefaultFunctions, PostProcessing
 from .configuration import Configuration
 from .config_types import ConfigTypes
@@ -17,15 +17,7 @@ configuration_logger = logger
 
 
 # Predefined section handles (Sections.APP and Sections.SEC) are initialized with a prefix value
-ConstSections.APP.prefix = 'app'
-ConstSections.SEC.prefix = 'sec'
+# ConstSection(Section.APP).section_prefix = 'app'
 
 # Predefined configuration id handles (Objects of type LazyConfigId) are initialized with a config id value 
-ConstConfigs.configfile.config_id = (
-    ConstSections.APP.build_id(ConstConfigs.configfile.name))
-ConstConfigs.securestore_file.config_id =(
-    ConstSections.SEC.build_id(ConstConfigs.securestore_file.name))
-ConstConfigs.keyfile_filepath.config_id = (
-    ConstSections.SEC.build_id(ConstConfigs.keyfile_filepath.name))
-ConstConfigs.keyring_service_name.config_id = (
-    ConstSections.SEC.build_id(ConstConfigs.keyring_service_name.name))
+# Example: ConstConfig('configfile').config_id = 'app_configfile'

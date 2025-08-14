@@ -14,7 +14,7 @@ class DummyProvider(dict):
     def __init__(self):
         self.dummyprovider = {
             'master_key': 'ZwJrh5riYXfdOj+c9PGQpZjMwbmTnV7G+sopW/qjTyw=',
-            'salt_key': 'XBGG61LZC+o48Rsqmod2nnZZxTkROW2JuJoopOb/QFg='
+            'salt': 'XBGG61LZC+o48Rsqmod2nnZZxTkROW2JuJoopOb/QFg='
         }
 
     def get(self, name):
@@ -69,7 +69,7 @@ def test_secure_store_module_wrong_salt():
     provider = DummyProvider()
     provider2 = DummyProvider()
     # assign wrong salt key
-    provider2.set('salt_key', secure_store.generate_key_str())
+    provider2.set('salt', secure_store.generate_key_str())
     assert run_cycle(provider, provider2) == False
     assert validate_master_key(provider2) == False
 

@@ -98,17 +98,17 @@
     default: APP_KEY
     description: item name for master key for protection of secure storage (read only) (never displayed)
 
-  - name: salt_key_keystore
+  - name: salt_keystore
     type: str
     readonly: True
     default: keyring
     description:
 
 
-  - name: salt_key_item_name
+  - name: salt_item_name
     type: str
     readonly: True
-    default: salt_key
+    default: salt
     description:
 
 

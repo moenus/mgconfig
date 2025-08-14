@@ -1,5 +1,5 @@
 from mgconfig.keystore import KeyStores
-from mgconfig.helpers import ConstSections
+from mgconfig.helpers import lazy_build_config_id, section_SEC
 
 class Key:
     def __init__(self, keystore_name, item_name: str):
@@ -28,7 +28,7 @@ class Key:
                 f'Keystore {self.keystore_name} cannot provide a value for {self.item_name}.')
 
 
-SALTKEYNAME = 'salt_key'
+SALTNAME = 'salt'
 MASTERKEYNAME = 'master_key'
 
 ITEM_NAME_TAG = 'item_name'
@@ -36,31 +36,27 @@ KEYSTORE_NAME_TAG = 'keystore'
 
 
 def get_from_conf(conf, key_name, value_name):
-    config_name = ConstSections.SEC.build_id(key_name + "_" + value_name)
-    value = conf.get(config_name)
+    config_id = lazy_build_config_id(section_SEC, key_name + "_" + value_name)
+    value = conf.get(config_id)
     if value is None:
-        raise ValueError(f'Cannot find {config_name} for {key_name}')
+        raise ValueError(f'Cannot find {config_id} for {key_name}')
     return value
 
 
 class KeyProvider:
     def __init__(self, config):
         self._keys = {}
-        self.valid_keys = [SALTKEYNAME, MASTERKEYNAME]
+        self.valid_keys = [SALTNAME, MASTERKEYNAME]
         for key_name in self.valid_keys:
-            if not self.configure(config, key_name):
-                raise ValueError(f'Configuration for {key_name} not valid.')
+            if not key_name in self.valid_keys:
+                raise ValueError(f'Invalid key name {key_name}')
+            keystore_name = get_from_conf(config, key_name, KEYSTORE_NAME_TAG)
+            if not KeyStores.contains(keystore_name):
+                raise ValueError(f'Invalid keystore name {keystore_name}')
+            KeyStores.get(keystore_name).configure(config)
+            item_name = get_from_conf(config, key_name, ITEM_NAME_TAG)
+            self._keys[key_name] = Key(keystore_name, item_name)
 
-    def configure(self, config, key_name: str):
-        if not key_name in self.valid_keys:
-            raise ValueError(f'Invalid key name {key_name}')
-        keystore_name = get_from_conf(config, key_name, KEYSTORE_NAME_TAG)
-        if not KeyStores.contains(keystore_name):
-            raise ValueError(f'Invalid keystore name {keystore_name}')
-        KeyStores.get(keystore_name).configure(config)
-        item_name = get_from_conf(config, key_name, ITEM_NAME_TAG)
-        self._keys[key_name] = Key(keystore_name, item_name)
-        return True
 
     def get(self, name):
         if name in self._keys:

@@ -1,5 +1,5 @@
 import mgconfig.extension_system
-from mgconfig.helpers import ConstSections
+from mgconfig.helpers import section_APP, lazy_build_config_id
 
 class AppHeaderMeta(type):
     def __setattr__(cls, name, value):
@@ -7,7 +7,8 @@ class AppHeaderMeta(type):
             raise TypeError(f'Name {name} not defined in AppHeader.')
         # print(f"Intercepted setting {name} = {value!r} on class {cls.__name__}")
         super().__setattr__(name, value)
-        mgconfig.extension_system.DefaultValues().add(ConstSections.APP.build_id(name), value)    
+        config_id = lazy_build_config_id(section_APP, name)
+        mgconfig.extension_system.DefaultValues().add(config_id, value)    
 
 class AppHeader(metaclass=AppHeaderMeta):
     name = None
@@ -25,9 +26,3 @@ class AppHeader(metaclass=AppHeaderMeta):
             if not name.startswith("_") and type(cls.__dict__[name]) == str:
                 header[name] = cls.__dict__[name]
         return header
-    
-    # @classmethod
-    # def set_as_default(cls):
-    #     header = cls.get_header()
-    #     for name in header:
-    #         mgconfig.extension_system.DefaultValues().add(ConfigId.build(SectionPrefix.get(PREFIX_NAME_APP), name), header[name])
