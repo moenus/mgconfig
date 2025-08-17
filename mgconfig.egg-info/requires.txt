@@ -1,3 +1,7 @@
-tzlocal<6.0,>=5.0
-python-dotenv<2.0,>=1.0.0
-PyYAML<7.0,>=6.0
+
+[docs]
+sphinx
+sphinx-rtd-theme
+
+[tests]
+pytest

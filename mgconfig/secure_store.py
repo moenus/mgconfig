@@ -224,7 +224,8 @@ class SecureStore:
         if secret_name not in self.securestore:
             return None
         encrypted_data = self.securestore[secret_name]
-        assert type(encrypted_data) == dict
+        if type(encrypted_data) != dict:
+            raise TypeError(f'Encrypted data for secret name {secret_name} is not a dict')
         try:
             enc_key = self._derive_keys()
             nonce = b64str_to_bytes(encrypted_data[ITEMNAME_NONCE])

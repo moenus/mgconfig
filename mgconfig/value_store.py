@@ -18,7 +18,7 @@ class ConfigValueSource(str, Enum):
     CFGFILE = 'cfgfile'
     ENV_VAR = 'env_var'
     DEFAULT = 'default'
-    SECRET = 'secret'
+    ENCRYPT = 'encrypt'
 
 
 class ValueStore:
@@ -85,7 +85,7 @@ class ValueStoreSecure(ValueStore):
         Args:
             init_config (Dict[str, str]): The configuration object with initialization values.
         """
-        super().__init__(init_config, ConfigValueSource.SECRET)
+        super().__init__(init_config, ConfigValueSource.ENCRYPT)
         self.securestore_file = init_config.get(
             config_securestorefile.config_id)
         # initialize key provider with the configuration values from Configuration object

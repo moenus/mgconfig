@@ -131,7 +131,7 @@ class TestValueStoreSecure(unittest.TestCase):
 
         store = mod.ValueStoreSecure(self.init_config)
 
-        self.assertEqual(store.source, mod.ConfigValueSource.SECRET)
+        self.assertEqual(store.source, mod.ConfigValueSource.ENCRYPT)
         mock_key_provider.assert_called_once_with(self.init_config)
         mock_secure_store.assert_called_once_with(
             "securestore_file", mock_key_provider.return_value
@@ -169,7 +169,7 @@ class TestValueStoreSecure(unittest.TestCase):
         val, src = store.retrieve_value("item1")
 
         self.assertEqual(val, "secret_value")
-        self.assertEqual(src, mod.ConfigValueSource.SECRET)
+        self.assertEqual(src, mod.ConfigValueSource.ENCRYPT)
 
     @patch.object(mod, "KeyProvider")
     @patch.object(mod, "SecureStore", side_effect=OSError("cannot open"))
@@ -178,7 +178,7 @@ class TestValueStoreSecure(unittest.TestCase):
         val, src = store.retrieve_value("item1")
 
         self.assertIsNone(val)
-        self.assertEqual(src, mod.ConfigValueSource.SECRET)
+        self.assertEqual(src, mod.ConfigValueSource.ENCRYPT)
 
     @patch.object(mod, "KeyProvider")
     @patch.object(mod, "SecureStore")

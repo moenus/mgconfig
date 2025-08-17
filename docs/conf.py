@@ -10,8 +10,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'mgconfig'
-copyright = '2025, Michael Gross'
-author = 'Michael Gross'
+copyright = '2025, Moenus'
+author = 'Moenus'
 release = 'V0.5'
 
 # -- General configuration ---------------------------------------------------

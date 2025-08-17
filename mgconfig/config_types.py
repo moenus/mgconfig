@@ -66,10 +66,10 @@ class ConfigTypes():
         else:
             try:
                 parsed_value = parse_function(value)
-                if parsed_value is not None:
-                    return True, parsed_value
             except:
-                pass
+                parsed_value = None
+        if parsed_value is not None:
+            return True, parsed_value
         return False, None
 
     @staticmethod
@@ -88,8 +88,8 @@ class ConfigTypes():
 
     @staticmethod
     def _parse_int_positive(value: Any) -> int:
-        assert int(value) >= 0
-        return int(value)
+        if int(value) >= 0:
+            return int(value)
 
     @staticmethod
     def _parse_base64(value: Any) -> str:

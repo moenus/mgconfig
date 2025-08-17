@@ -13,5 +13,5 @@ venv/
 # Others
 .DS_Store
 
-instructions_mg.txt
+mg-instructions.md
 add_copyright.py

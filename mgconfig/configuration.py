@@ -188,7 +188,7 @@ class Configuration():
         output = config_value.output_new()
         if cfg_def.config_type == 'secret':
             self._save_value(ValueStoreSecure, config_id, output)
-            source = ConfigValueSource.SECRET
+            source = ConfigValueSource.ENCRYPT
             logger.info(f'Secret value for {config_id} was changed.')
         else:
             self._save_value(ValueStoreFile, config_id, output)

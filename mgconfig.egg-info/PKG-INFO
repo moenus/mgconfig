@@ -1,19 +1,26 @@
 Metadata-Version: 2.4
 Name: mgconfig
-Version: 0.1
-Summary: A lightweight Python configuration system driven by declarative YAML definitions
+Version: 0.1.0
+Summary: A flexible, robust and extensible configuration package
 Author: Michael Gross
+Author-email: Moenus <moenus@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/moenus/mgconfig
+Project-URL: Issues, https://github.com/moenus/mgconfig/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
-Requires-Dist: tzlocal<6.0,>=5.0
-Requires-Dist: python-dotenv<2.0,>=1.0.0
-Requires-Dist: PyYAML<7.0,>=6.0
+License-File: license.md
+Provides-Extra: docs
+Requires-Dist: sphinx; extra == "docs"
+Requires-Dist: sphinx-rtd-theme; extra == "docs"
+Provides-Extra: tests
+Requires-Dist: pytest; extra == "tests"
 Dynamic: author
-Dynamic: description
-Dynamic: description-content-type
-Dynamic: requires-dist
+Dynamic: license-file
 Dynamic: requires-python
-Dynamic: summary
 
 # Python Package mgconfig
 
@@ -45,10 +52,16 @@ pip install tzlocal python-dotenv
 
 
 ## Dependencies
-- tzlocal â€” for determining the local timezone
+- tzlocal — for determining the local timezone
 
-- python-dotenv â€” for loading .env files during development
+- python-dotenv — for loading .env files during development
 
 Python 3.7+ recommended
 
+## License
 
+This project is licensed under the MIT License.
+
+## Documentation
+
+Full documentation is available at: https://mgconfig.readthedocs.io
