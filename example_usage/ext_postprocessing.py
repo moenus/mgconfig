@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import pytz
 
 LOCAL_TZ_ID = 'local_tz'

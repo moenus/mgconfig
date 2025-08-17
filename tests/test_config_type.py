@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from pathlib import Path
 from datetime import time, date
 from mgconfig import ConfigTypes

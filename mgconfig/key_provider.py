@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from mgconfig.keystore import KeyStores
 from mgconfig.helpers import lazy_build_config_id, section_SEC
 

@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from .config_types import ConfigTypes
 from typing import Any, Optional
 

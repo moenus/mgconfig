@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from mgconfig.key_provider import KeyProvider
 from mgconfig.secure_store import generate_key_str
 from pathlib import Path

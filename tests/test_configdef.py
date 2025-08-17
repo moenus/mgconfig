@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from mgconfig.configdef import ConfigDefs
 from t_helpers import CONFIG_DEFINITIONS_YAML, set_app_header, DefaultValues
 

@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from pathlib import Path
 
 a = Path(r'/dir/a.txt')

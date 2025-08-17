@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 # Windows reserved names (case-insensitive), with or without extension
 _WINDOWS_RESERVED = {
     "CON", "PRN", "AUX", "NUL",

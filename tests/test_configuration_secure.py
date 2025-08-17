@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import os
 from t_helpers import prepare_clean_basedir, create_configuration, prepare_new_env_master_key
 

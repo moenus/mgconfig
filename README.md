@@ -34,6 +34,10 @@ pip install tzlocal python-dotenv
 
 Python 3.7+ recommended
 
+## License
+
+This project is licensed under the MIT License.
+
 ## Documentation
 
 Full documentation is available at: https://mgconfig.readthedocs.io

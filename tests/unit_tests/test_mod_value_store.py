@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import os
 import unittest
 from unittest.mock import patch, MagicMock, mock_open

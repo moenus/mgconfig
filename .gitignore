@@ -14,3 +14,4 @@ venv/
 .DS_Store
 
 instructions_mg.txt
+add_copyright.py

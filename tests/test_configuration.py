@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from datetime import time
 from pathlib import Path
 from t_helpers import prepare_clean_basedir, create_configuration, set_app_header, prepare_new_env_master_key

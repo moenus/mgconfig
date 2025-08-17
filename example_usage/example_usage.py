@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from mgconfig import Configuration, DefaultValues, PostProcessing, DefaultFunctions, ConfigTypes, configuration_logger
 from ext_default_functions import default_hostname, default_timezone
 from ext_postprocessing import extend_timezone_configuration, LOCAL_TZ_ID

@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from mgconfig import secure_store
 from t_helpers import remove_file, get_test_filepath
 import os

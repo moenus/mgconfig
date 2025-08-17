@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import os
 import yaml
 from .helpers import logger, config_securestorefile, config_configfile

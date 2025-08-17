@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from typing import Callable, Optional, Any
 from types import MappingProxyType
 

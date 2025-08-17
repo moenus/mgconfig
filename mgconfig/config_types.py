@@ -1,3 +1,5 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
 import base64
 from datetime import datetime, time, date
 from pathlib import Path

@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import mgconfig.extension_system
 from mgconfig.helpers import section_APP, lazy_build_config_id
 

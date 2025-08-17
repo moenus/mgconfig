@@ -1,0 +1,18 @@
+sphinx
+sphinx-rtd-theme
+sphinx-autodoc-typehints
+sphinxcontrib-napoleon
+# Sphinx core
+sphinx>=7.0,<8.0
+
+# Optional themes (e.g., Read the Docs theme)
+sphinx-rtd-theme>=1.0
+
+# Autodoc for generating API docs from docstrings
+sphinx-autodoc-typehints>=1.20
+
+# for Google/NumPy style docstrings
+sphinx.ext.napoleon 
+
+# Optional: Markdown support
+myst-parser>=0.18

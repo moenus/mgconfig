@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import json
 import pytest
 from mgconfig.secure_store import SecureStore, generate_key_str, bytes_to_b64str, b64str_to_bytes
