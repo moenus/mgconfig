@@ -33,7 +33,7 @@ from .extension_system import DefaultValues, DefaultFunctions, PostProcessing
 from .configuration import Configuration
 from .config_types import ConfigTypes
 
-__version__ = "0.5"
+__version__ = "0.1.0"
 
 configuration_logger = logger 
 
