@@ -13,7 +13,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         "tzlocal>=5.0,<6.0",
-        "python-dotenv>=1.0.0,<2.0",
         "PyYAML>=6.0,<7.0",
     ],
     python_requires='>=3.8',

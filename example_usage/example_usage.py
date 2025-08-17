@@ -35,6 +35,7 @@ configuration_logger.replace_logger(app_logger)
 # default values - example
 # ---------------------------------------------------------------------
 DefaultValues().clear()
+DefaultValues().add('app_title', 'Application Title')
 
 # ---------------------------------------------------------------------
 # default functions - example
@@ -46,14 +47,6 @@ DefaultFunctions().add('timezone', default_timezone)
 # post-processing - example
 # ---------------------------------------------------------------------
 PostProcessing().add(extend_timezone_configuration)
-
-# ---------------------------------------------------------------------
-# application header values - example
-# ---------------------------------------------------------------------
-AppHeader.name = 'testapp'
-AppHeader.title = 'Application Title'
-AppHeader.prefix = 'app'
-AppHeader.version = 'V1.0'
 
 # ---------------------------------------------------------------------
 # configuration item value creation

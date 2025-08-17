@@ -13,7 +13,7 @@ Prerequisites
 From PyPI
 ---------
 
-If `mgconfig` is published on PyPI, you can install it with:
+`mgconfig` is published on PyPI, you can install it with:
 
 .. code-block:: bash
 
@@ -26,7 +26,7 @@ If you have the source code locally (e.g., from GitHub or a zip file):
 
 .. code-block:: bash
 
-    git clone https://github.com/yourusername/mgconfig.git
+    git clone https://github.com/moenus/mgconfig.git
     cd mgconfig
     pip install .
 

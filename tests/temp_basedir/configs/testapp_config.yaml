@@ -1,0 +1,6 @@
+test-definitions:
+  bool: true
+  integer: 600
+  path: /dir/c.txt
+  string: newstring_immediate
+  time: '13:11:25'

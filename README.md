@@ -21,7 +21,7 @@
 pip install -e .
 
 # Or install runtime dependencies if not using an editable install
-pip install tzlocal python-dotenv
+pip install tzlocal 
 
 ``` 
 ---
@@ -29,8 +29,6 @@ pip install tzlocal python-dotenv
 
 ## Dependencies
 - tzlocal — for determining the local timezone
-
-- python-dotenv — for loading .env files during development
 
 Python 3.7+ recommended
 
