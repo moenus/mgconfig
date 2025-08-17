@@ -34,6 +34,6 @@ pip install tzlocal python-dotenv
 
 Python 3.7+ recommended
 
-##Documentation
+## Documentation
 
-Full documentation is available at: https://projectname.readthedocs.io
+Full documentation is available at: https://mgconfig.readthedocs.io
