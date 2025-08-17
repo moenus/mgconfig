@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>## Configuration YAML Overview &mdash; mgconfig V0.5 documentation</title>
+  <title>Configuration YAML Overview &mdash; mgconfig V0.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -18,7 +18,8 @@
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="API Reference" href="doc_api.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,11 +42,15 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="doc_installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_secure_store.html">Security Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_api.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration YAML Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-file-example">Configuration file example</a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -62,7 +67,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">## Configuration YAML Overview</li>
+      <li class="breadcrumb-item active">Configuration YAML Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/doc_configuration_yaml.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -73,73 +78,74 @@
            <div itemprop="articleBody">
              
   <section id="configuration-yaml-overview">
-<h1>## Configuration YAML Overview<a class="headerlink" href="#configuration-yaml-overview" title="Link to this heading"></a></h1>
-<p><cite>mgconfig</cite> is driven by a YAML configuration <strong>definition</strong> file.
-It does <strong>not</strong> directly store runtime values — instead, it describes:</p>
+<h1>Configuration YAML Overview<a class="headerlink" href="#configuration-yaml-overview" title="Link to this heading"></a></h1>
+<p><cite>mgconfig</cite> is driven by YAML <strong>configuration definition</strong> files.
+They do <strong>not</strong> directly store runtime values — instead, they describe:</p>
 <ul class="simple">
 <li><p><strong>Sections</strong>: logical groups of related settings.</p></li>
 <li><p><strong>Prefixes</strong>: short identifiers prepended to config names for namespacing.</p></li>
-<li><p><strong>Configs</strong>: individual configuration items, each with:
-- <strong>name</strong> — short key for the setting.
-- <strong>type</strong> — one of the supported types (e.g., <cite>str</cite>, <cite>int</cite>, <cite>bool</cite>, <cite>path</cite>, <cite>base64</cite>, <cite>seconds</cite>, <cite>minutes</cite>, <cite>time</cite>, <cite>secret</cite>, <cite>fn</cite>).
-- <strong>basic</strong> — marks a config as “core” or “simple”.
-- <strong>description</strong> — human-readable explanation.
-- <strong>default</strong> — static default value (supports references to other configs via <cite>$(…)</cite>).
-- <strong>env</strong> — environment variable name for overrides.
-- <strong>default_function</strong> — name of a registered Python function to supply a dynamic default.</p></li>
+<li><dl class="simple">
+<dt><strong>Configs</strong>: individual configuration items, each with:</dt><dd><ul>
+<li><p><strong>name</strong> — short key for the setting.</p></li>
+<li><p><strong>type</strong> — one of the supported types (e.g., <cite>str</cite>, <cite>int</cite>, <cite>bool</cite>, <cite>path</cite>, <cite>base64</cite>, <cite>seconds</cite>, <cite>minutes</cite>, <cite>time</cite>, <cite>secret</cite>, <cite>fn</cite>).</p></li>
+<li><p><strong>basic</strong> — marks a config as “core” or “simple”.</p></li>
+<li><p><strong>description</strong> — human-readable explanation.</p></li>
+<li><p><strong>default</strong> — static default value (supports references to other configs via <cite>$(…)</cite>).</p></li>
+<li><p><strong>env</strong> — environment variable name for overrides.</p></li>
+<li><p><strong>default_function</strong> — name of a registered Python function to supply a dynamic default.</p></li>
 </ul>
-<section id="minimal-working-example">
-<h2>### Minimal working example<a class="headerlink" href="#minimal-working-example" title="Link to this heading"></a></h2>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>yaml
-- section: application</p>
-<blockquote>
-<div><p>prefix: app
-configs:</p>
-<ul class="simple">
-<li><p>name: title
-type: str
-basic: True
-description: full title of the application (shown in web UI) (read only)</p></li>
-<li><p>name: name
-type: str
-basic: True
-description: name of the application (read only)</p></li>
-<li><p>name: version
-type: str
-basic: True
-description: version of the application (read only)</p></li>
-<li><p>name: prefix
-type: str
-basic: True
-description: abbreviation for the application which is used for URLs, file names, etc. (read only)</p></li>
-<li><p>name: basedir
-type: path
-basic: True
-default: /$(app_name)_data
-env: DATA_DIRECTORY
-description: base directory for application execution</p></li>
-<li><p>name: configdir
-type: path
-basic: True
-default: $(app_basedir)/configs
-env: CONFIG_DIRECTORY
-description: configuration directory (read only)</p></li>
-<li><p>name: configfile
-type: path
-basic: True
-default: $(app_configdir)/$(app_name)_config.yaml
-env: CONFIGFILE
-description: full pathname of configuration file (read only)</p></li>
+</dd>
+</dl>
+</li>
 </ul>
-</div></blockquote>
-<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<section id="configuration-file-example">
+<h2>Configuration file example<a class="headerlink" href="#configuration-file-example" title="Link to this heading"></a></h2>
+<p>Example for a YAML configuration definition file::</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>- section: application
+  prefix: app
+  configs:
+
+- name: name
+  type: str
+  basic: True
+  description: name of the application (read only)
+
+- name: version
+  type: str
+  basic: True
+  description: version of the application (read only)
+
+- name: basedir
+  type: path
+  basic: True
+  default: /$(app_name)_data
+  env: DATA_DIRECTORY
+  description: base directory for application execution
+
+- name: configdir
+  type: path
+  basic: True
+  default: $(app_basedir)/configs
+  env: CONFIG_DIRECTORY
+  description: configuration directory (read only)
+
+- name: configfile
+  type: path
+  basic: True
+  default: $(app_configdir)/$(app_name)_config.yaml
+  env: CONFIGFILE
+  description: full pathname of configuration file (read only)
+</pre></div>
+</div>
 </section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="doc_api.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
 
   <hr/>
 

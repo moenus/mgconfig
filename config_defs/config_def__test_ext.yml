@@ -16,3 +16,9 @@
   - name: filename
     type: filename
     default: abdc.json
+
+  - name: special_test_key
+    type: hidden
+    env: TEST_KEY
+    readonly: True
+    description: key example for testing purposes (read only) (never displayed)

@@ -54,13 +54,14 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#key-lifecycle-management">Key Lifecycle Management</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#salt-key">Salt Key</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#master-key">Master Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#salt">Salt</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="doc_api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_configuration_yaml.html">Configuration YAML Overview</a></li>
 </ul>
 
         </div>
@@ -90,16 +91,16 @@
   <section id="security-considerations">
 <h1>Security Considerations<a class="headerlink" href="#security-considerations" title="Link to this heading"></a></h1>
 <p>The application stores encrypted configuration values (of type <code class="docutils literal notranslate"><span class="pre">str</span></code>) within a <code class="docutils literal notranslate"><span class="pre">keystore_file</span></code>.
-This encryption process uses two key components:</p>
+This encryption process uses two components:</p>
 <ul class="simple">
-<li><p><strong>Salt Key</strong> – adds randomness and uniqueness to encryption</p></li>
 <li><p><strong>Master Key</strong> – used to derive the actual encryption key for protecting secrets</p></li>
+<li><p><strong>Salt</strong> – adds randomness and uniqueness to encryption</p></li>
 </ul>
-<p>Both keys are essential to the confidentiality and integrity of stored data.</p>
+<p>Both elements are essential to the confidentiality and integrity of stored data.</p>
 <hr class="docutils" />
 <section id="key-storage-options">
 <h2>Key Storage Options<a class="headerlink" href="#key-storage-options" title="Link to this heading"></a></h2>
-<p>There are three supported methods for storing the <strong>salt key</strong> and <strong>master key</strong> securely:</p>
+<p>There are three supported methods for storing the <strong>salt</strong> and <strong>master key</strong> securely:</p>
 <section id="system-keyring-recommended-for-desktop-systems">
 <h3>1. System Keyring (Recommended for Desktop Systems)<a class="headerlink" href="#system-keyring-recommended-for-desktop-systems" title="Link to this heading"></a></h3>
 <ul class="simple">
@@ -139,22 +140,23 @@ This encryption process uses two key components:</p>
 <hr class="docutils" />
 <section id="key-lifecycle-management">
 <h2>Key Lifecycle Management<a class="headerlink" href="#key-lifecycle-management" title="Link to this heading"></a></h2>
-<p>The application can generate both the <strong>salt key</strong> and the <strong>master key</strong>.
+<p>The application can generate both the <strong>master key</strong> and the <strong>salt</strong>.
 However, <strong>automatic storage is only supported when using the System Keyring</strong>.
 In Docker-based environments, generated keys must be <strong>manually copied</strong> to the configured storage location
 (e.g., mounted file or environment variable).</p>
-<section id="salt-key">
-<h3>Salt Key<a class="headerlink" href="#salt-key" title="Link to this heading"></a></h3>
-<ul class="simple">
-<li><p>Generated <strong>once during application installation</strong>.</p></li>
-<li><p>Must remain <strong>unchanged across application updates</strong> to ensure encrypted values remain decryptable</p></li>
-</ul>
-</section>
 <section id="master-key">
 <h3>Master Key<a class="headerlink" href="#master-key" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Generated <strong>during application installation</strong> and regenerated when triggered.</p></li>
 <li><p>Should be changed regularily (e.g. once a year). This needs to be done by the app using mgconf.</p></li>
+</ul>
+</section>
+<section id="salt">
+<h3>Salt<a class="headerlink" href="#salt" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The salt is a random value added to data before hashing (like passwords). Its main purpose is to prevent precomputed attacks (rainbow tables) and make hashes unique, even for identical inputs.</p></li>
+<li><p>Generated <strong>once during application installation</strong>.</p></li>
+<li><p>Must remain <strong>unchanged across application updates</strong> to ensure encrypted values remain decryptable</p></li>
 </ul>
 </section>
 </section>

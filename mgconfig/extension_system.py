@@ -52,13 +52,6 @@ class PostProcessing(DefaultsDict):
         else:
             raise ValueError('Value is not callable.')
 
-# test = DefaultValues()
-# test.add('abd', 'xyz')
-# print(test.get('abd'))
-# DefaultValues().add('a12', 'b13')
-# print(test.get('a12'))
-# print(test.dict)
-
 
 default_values_obj = DefaultValues()         # creation of singleton object
 default_functions_obj = DefaultFunctions()   # creation of singleton object

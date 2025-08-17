@@ -7,7 +7,7 @@ from ext_app_header import AppHeader
 
 CONFIG_DEFINITIONS_YAML = [
     "config_defs/config_def__app.yml",
-    "config_defs/config_def__test.yml"
+    "config_defs/config_def__example.yml"
 ]
 
 
@@ -67,3 +67,5 @@ if config.extended_item_exists(LOCAL_TZ_ID):
 else:
     app_logger.info(
         f'Configuration value for "{LOCAL_TZ_ID}" was not found.')
+
+print(ConfigTypes.list_all())

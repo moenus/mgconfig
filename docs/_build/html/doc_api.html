@@ -19,6 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration YAML Overview" href="doc_configuration_yaml.html" />
     <link rel="prev" title="Security Considerations" href="doc_secure_store.html" /> 
 </head>
 
@@ -61,6 +62,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="doc_configuration_yaml.html">Configuration YAML Overview</a></li>
 </ul>
 
         </div>
@@ -105,8 +107,20 @@ Includes both current and pending (new) values.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mgconfig.configuration.Configuration.extended_item_exists">
-<span class="sig-name descname"><span class="pre">extended_item_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.extended_item_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.extended_item_exists" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">extended_item_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.extended_item_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.extended_item_exists" title="Link to this definition"></a></dt>
+<dd><p>Check if an attribute exists in the extended object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the attribute to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the attribute exists, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get">
@@ -128,13 +142,35 @@ Includes both current and pending (new) values.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get_extended_item">
-<span class="sig-name descname"><span class="pre">get_extended_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_extended_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_extended_item" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">get_extended_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_extended_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_extended_item" title="Link to this definition"></a></dt>
+<dd><p>Retrieve the value of an attribute from the extended object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the attribute to retrieve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the attribute if it exists, otherwise None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get_new_masterkey">
-<span class="sig-name descname"><span class="pre">get_new_masterkey</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_new_masterkey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_new_masterkey" title="Link to this definition"></a></dt>
-<dd><p>Prepare a new master key from the secure value store.</p>
+<span class="sig-name descname"><span class="pre">get_new_masterkey</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_new_masterkey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_new_masterkey" title="Link to this definition"></a></dt>
+<dd><p>Prepare a new master key from the secure value store.
+This method interacts with the secure value store to generate
+and return a fresh master key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A newly generated master key.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -147,7 +183,16 @@ Optionally apply it immediately in the current instance.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="mgconfig.configuration.Configuration.set_extended_item">
 <span class="sig-name descname"><span class="pre">set_extended_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.set_extended_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.set_extended_item" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Set or add an attribute to the extended object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the attribute to set.</p></li>
+<li><p><strong>value</strong> (<em>Any</em>) – The value to assign to the attribute.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -158,6 +203,7 @@ Optionally apply it immediately in the current instance.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="doc_secure_store.html" class="btn btn-neutral float-left" title="Security Considerations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="doc_configuration_yaml.html" class="btn btn-neutral float-right" title="Configuration YAML Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

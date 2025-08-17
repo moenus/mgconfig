@@ -12,24 +12,6 @@ VALUE_CLASS = 'class'
 class ConfigTypes():
     _config_types = {}
 
-    def _add_basic_types() -> None:
-        ConfigTypes.add_type('str', str, str, None, None)
-        ConfigTypes.add_type('int', int, int, str, None)
-        ConfigTypes.add_type('float', float, float, str, None)
-        ConfigTypes.add_type('bool', bool, ConfigTypes._parse_bool, str, None)
-        ConfigTypes.add_type(
-            'date', date, ConfigTypes._parse_date, ConfigTypes._display_date, str)
-        ConfigTypes.add_type(
-            'time', time, ConfigTypes._parse_time, str, str)
-        ConfigTypes.add_type(
-            'path', Path, Path, str, ConfigTypes._output_path)
-        ConfigTypes.add_type(
-            'secret', str, str, ConfigTypes._display_asterix, None)
-        ConfigTypes.add_type('bytes', bytes, ConfigTypes._parse_base64,
-                             ConfigTypes._display_asterix, ConfigTypes._output_base64)
-        ConfigTypes.add_type('hidden', None, None,
-                             ConfigTypes._display_asterix, None)
-
     @staticmethod
     def add_type(name: str,
                  value_class: Any,
@@ -143,6 +125,27 @@ class ConfigTypes():
     def _display_asterix(value: Path) -> str:
         return '*****'
 
+    @staticmethod
+    def list_all() -> list:
+        return [key for key in ConfigTypes._config_types.keys()]
+
 
 # ------------------------------------------------------
-ConfigTypes._add_basic_types()
+# add the basic types
+#-------------------------------------------------------
+ConfigTypes.add_type('str', str, str, None, None)
+ConfigTypes.add_type('int', int, int, str, None)
+ConfigTypes.add_type('float', float, float, str, None)
+ConfigTypes.add_type('bool', bool, ConfigTypes._parse_bool, str, None)
+ConfigTypes.add_type(
+    'date', date, ConfigTypes._parse_date, ConfigTypes._display_date, str)
+ConfigTypes.add_type(
+    'time', time, ConfigTypes._parse_time, str, str)
+ConfigTypes.add_type(
+    'path', Path, Path, str, ConfigTypes._output_path)
+ConfigTypes.add_type(
+    'secret', str, str, ConfigTypes._display_asterix, None)
+ConfigTypes.add_type('bytes', bytes, ConfigTypes._parse_base64,
+                     ConfigTypes._display_asterix, ConfigTypes._output_base64)
+ConfigTypes.add_type('hidden', None, None,
+                     ConfigTypes._display_asterix, None)

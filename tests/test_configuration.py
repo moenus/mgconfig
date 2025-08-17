@@ -1,6 +1,6 @@
 from datetime import time
 from pathlib import Path
-from t_helpers import prepare_clean_basedir, create_configuration, set_app_header, prepare_new_env_master_key, AppHeader
+from t_helpers import prepare_clean_basedir, create_configuration, set_app_header, prepare_new_env_master_key
 
 
 BASE_DIRECTORY_PATH = prepare_clean_basedir()
@@ -8,10 +8,7 @@ BASE_DIRECTORY_PATH = prepare_clean_basedir()
 set_app_header()
 
 test_values = {
-    'app_title': AppHeader.title,
-    'app_name': AppHeader.name,
-    'app_prefix': AppHeader.prefix,
-    'app_version': AppHeader.version,
+    'app_name': 'testapp',
     'app_basedir': BASE_DIRECTORY_PATH,
     'tst_string': 'teststring',
     'tst_integer': 999,
@@ -47,7 +44,7 @@ def test_configuration_reading():
     prepare_new_env_master_key()
     config = create_configuration()
 
-    assert config.app_prefix == test_values['app_prefix']
+    assert config.app_name == test_values['app_name']
 
     for key, value in test_values.items():
         assert config.get(key) == value

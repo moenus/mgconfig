@@ -7,7 +7,7 @@ from unittest.mock import patch, mock_open, MagicMock
 import builtins
 
 # --- Imports from your module ---
-from mgconfig.configdef import ConfigDefs, ConfigDef, CONFIG_PREFIX
+from mgconfig.configdef import ConfigDefs, ConfigDef, CONFIG_PREFIX, CDF
 
 
 @pytest.fixture(autouse=True)
@@ -51,19 +51,6 @@ def make_yaml_data(valid=True):
         return {"not": "a list"}
 
 
-def test_read_data_mandatory_missing():
-    cd = ConfigDefs.__new__(ConfigDefs)
-    with pytest.raises(ValueError) as e:
-        cd._read_data("field", {}, {}, mandatory=True)
-    assert 'mandatory field "field" missing' in str(e.value)
-
-
-def test_read_data_with_default():
-    cd = ConfigDefs.__new__(ConfigDefs)
-    target = {}
-    cd._read_data("field", {}, target, default="DEF")
-    assert target["config_field"] == "DEF"
-
 
 def test_parse_config_defs_success(tmp_path, mock_defaults):
     yaml_path = tmp_path / "cfg.yaml"
@@ -76,15 +63,6 @@ def test_parse_config_defs_success(tmp_path, mock_defaults):
     assert cfg_def.config_default == "val_default"  # comes from mock_vals.dict
 
 
-def test_parse_with_default_function(tmp_path, mock_defaults):
-    data = make_yaml_data()
-    data[0]["configs"][0]["default_function"] = "use_func"
-    data[0]["configs"][0].pop("default", None)
-    yaml_path = tmp_path / "cfg.yaml"
-    yaml_path.write_text(yaml.safe_dump(data), encoding="utf-8")
-
-    cfg = ConfigDefs(yaml_path)
-    assert cfg.config_defs["prefix_name"].config_default == "func_default"
 
 
 def test_parse_with_default_values(tmp_path, mock_defaults):

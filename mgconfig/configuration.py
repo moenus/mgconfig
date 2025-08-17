@@ -16,6 +16,15 @@ class Configuration():
 
     """
 
+    # def __new__(cls,cfg_defs_filepaths: Union[str, List[str]]):
+    #     # Name-mangled, so private to each class - singleton pattern
+    #     private_instance_name = f"_{cls.__name__}__instance"
+
+    #     if not hasattr(cls, private_instance_name):
+    #         instance = super().__new__(cls, cfg_defs_filepaths)
+    #         setattr(cls, private_instance_name, instance)
+    #     return getattr(cls, private_instance_name)
+
     def __init__(self, cfg_defs_filepaths: Union[str, List[str]]):
         self._config_values = {}
         self.extended = SimpleNamespace()

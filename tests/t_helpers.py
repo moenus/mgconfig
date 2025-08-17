@@ -1,10 +1,9 @@
 import os
-from dotenv import load_dotenv
 from mgconfig import secure_store
 import shutil
 from pathlib import Path
 from mgconfig import Configuration, DefaultValues
-from example_usage.ext_app_header import AppHeader
+
 
 CONFIG_DEFINITIONS_YAML = [
     "config_defs/config_def__app.yml",
@@ -30,22 +29,12 @@ def get_test_filepath(filename):
 
 def set_app_header():
     DefaultValues().clear()
-    AppHeader.name = 'testapp'
-    AppHeader.title = 'Application Title'
-    AppHeader.prefix = 'app'
-    AppHeader.version = 'V1.0'
+    DefaultValues().add('app_name', 'testapp')
 
 
 def create_configuration():
     set_app_header()
     return Configuration(CONFIG_DEFINITIONS_YAML)
-
-
-# def load_development_env():
-#     # used in development environments
-#     DEVELOPMENT_ENV = Path(root_dir) / 'development.env'
-#     if os.path.exists(DEVELOPMENT_ENV):
-#         load_dotenv(dotenv_path=DEVELOPMENT_ENV)
 
 
 def remove_file(filepath):

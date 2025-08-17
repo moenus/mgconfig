@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration Definition &mdash; mgconfig V0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=fde8e45a"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage Tips and Hints" href="doc_tips_and_hints.html" />
+    <link rel="prev" title="API Reference" href="doc_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            mgconfig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="doc_introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_introduction.html#known-bugs-and-limitations">Known Bugs and Limitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_example_usage.html">Usage example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_secure_store.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_api.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration Definition</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-definition-file-example">Configuration definition file example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="doc_tips_and_hints.html">Usage Tips and Hints</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">mgconfig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuration Definition</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/doc_config_definition.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuration-definition">
+<h1>Configuration Definition<a class="headerlink" href="#configuration-definition" title="Link to this heading"></a></h1>
+<p><cite>mgconfig</cite> is driven by YAML <strong>configuration definition</strong> files.
+They do <strong>not</strong> directly store runtime values — instead, they describe:</p>
+<ul class="simple">
+<li><p><strong>Sections</strong>: logical groups of related settings.</p></li>
+<li><p><strong>Prefixes</strong>: short identifiers prepended to config names for namespacing.</p></li>
+<li><dl class="simple">
+<dt><strong>Configs</strong>: individual configuration items, each with:</dt><dd><ul>
+<li><p><strong>name</strong> — short key for the setting.</p></li>
+<li><p><strong>type</strong> — one of the supported types (see <a class="reference internal" href="doc_introduction.html#config-types"><span class="std std-ref">Configuration Types</span></a>).</p></li>
+<li><p><strong>readonly</strong> — marks a config as “readonly. (No changes to the values are allowed)</p></li>
+<li><p><strong>description</strong> — human-readable explanation.</p></li>
+<li><p><strong>default</strong> — static default value (supports references to other configs via <cite>$(…)</cite>).</p></li>
+<li><p><strong>env</strong> — environment variable name for overrides.</p></li>
+<li><p><strong>default_function</strong> — name of a registered Python function to supply a dynamic default.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<section id="configuration-definition-file-example">
+<h2>Configuration definition file example<a class="headerlink" href="#configuration-definition-file-example" title="Link to this heading"></a></h2>
+<p>Example for a YAML configuration definition file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>- section: application
+  prefix: app
+  configs:
+
+    - name: name
+      type: str
+      readonly: True
+      description: name of the application (read only)
+
+    - name: basedir
+      type: path
+      readonly: True
+      default: /$(app_name)_data
+      env: DATA_DIRECTORY
+      description: base directory for application execution
+
+    - name: configdir
+      type: path
+      readonly: True
+      default: $(app_basedir)/configs
+      env: CONFIG_DIRECTORY
+      description: configuration directory (read only)
+
+    - name: configfile
+      type: path
+      readonly: True
+      default: $(app_configdir)/$(app_name)_config.yaml
+      env: CONFIGFILE
+      description: full pathname of configuration file (read only)
+
+- section: secure_store
+  prefix: sec
+  configs:
+
+    - name: securestore_file
+      type: path
+      readonly: True
+      default: &#39;$(app_configdir)/$(app_name)_sec.json&#39;
+      env: SECURESTORE_FILE
+      description: filepath of secure store file
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="doc_api.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="doc_tips_and_hints.html" class="btn btn-neutral float-right" title="Usage Tips and Hints" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Michael Gross.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
