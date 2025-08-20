@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: MIT
 
 import os
-from mgconfig import secure_store
+from mgconfig.secure_store import SecureStore
 import shutil
 from pathlib import Path
 from mgconfig import Configuration, DefaultValues
+from mgconfig.secure_store_helpers import generate_key_str
 
 
 CONFIG_DEFINITIONS_YAML = [
@@ -17,7 +18,7 @@ root_dir = os.path.dirname(os.path.abspath(__file__))
 test_basedir = Path(root_dir) / 'temp_basedir'
 
 def prepare_new_env_master_key():
-    os.environ["APP_KEY"] = secure_store.generate_key_str()
+    os.environ["APP_KEY"] = generate_key_str()
 
 def prepare_clean_basedir():
     os.environ["DATA_DIRECTORY"] = test_basedir.as_posix()
@@ -37,6 +38,7 @@ def set_app_header():
 
 def create_configuration():
     set_app_header()
+    Configuration._instance = None 
     return Configuration(CONFIG_DEFINITIONS_YAML)
 
 

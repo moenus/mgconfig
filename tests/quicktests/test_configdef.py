@@ -1,8 +1,8 @@
 # Copyright (c) 2025 moenus
 # SPDX-License-Identifier: MIT
 
-from mgconfig.configdef import ConfigDefs
-from t_helpers import CONFIG_DEFINITIONS_YAML, set_app_header, DefaultValues
+from mgconfig.config_defs import ConfigDefs
+from tests.quicktests.t_helpers import CONFIG_DEFINITIONS_YAML, set_app_header, DefaultValues
 
 default_function_values = {}
 
@@ -11,7 +11,7 @@ def test_create_config_defs():
 
     default_values = DefaultValues().dict
 
-    cfg_defs = ConfigDefs(CONFIG_DEFINITIONS_YAML).config_defs
+    cfg_defs = ConfigDefs(CONFIG_DEFINITIONS_YAML).cfg_defs
 
     counter_default_values = 0
     counter_default_function_values = 0

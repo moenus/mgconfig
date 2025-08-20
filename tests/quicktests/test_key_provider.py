@@ -2,11 +2,12 @@
 # SPDX-License-Identifier: MIT
 
 from mgconfig.key_provider import KeyProvider
-from mgconfig.secure_store import generate_key_str
+from mgconfig.secure_store import SecureStore
 from pathlib import Path
 import json
 from mgconfig.helpers import lazy_build_config_id, section_SEC
-from t_helpers import get_test_filepath, prepare_clean_basedir
+from mgconfig.secure_store_helpers import generate_key_str
+from tests.quicktests.t_helpers import get_test_filepath, prepare_clean_basedir
 import keyring
 import os
 
@@ -15,10 +16,9 @@ SERVICE_NAME = 'mgconfig_test'
 config = {}
 
 prepare_clean_basedir()
-SALT_KEY = generate_key_str()
 MASTER_KEY = generate_key_str()
 os.environ["APP_KEY"] = MASTER_KEY
-keyring.set_password(SERVICE_NAME, 'salt', SALT_KEY)
+keyring.set_password(SERVICE_NAME, 'master_key', MASTER_KEY)
 
 
 def set_config(key_name, keystore_name, item_name):
@@ -46,22 +46,14 @@ def prepare_keyfile():
 
 def test_key_provider_module():
     set_config('master_key', 'env', 'APP_KEY')
-    set_config('salt', 'keyring', 'salt')
 
     prepare_keyfile()
 
     provider = KeyProvider(config)
 
     master_key = provider.get('master_key')
-    try:
-        salt = provider.get('salt')
-    except:
-        provider.set(
-            'salt', 'ZwJrh5riYXfdOj+c9PGQpZjMwbmTnV7G+sopW/qjTyw=')
-        salt = provider.get('salt')
 
     print(master_key)
-    print(salt)
 
 
 if __name__ == '__main__':

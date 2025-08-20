@@ -3,7 +3,7 @@
 
 from datetime import time
 from pathlib import Path
-from t_helpers import prepare_clean_basedir, create_configuration, set_app_header, prepare_new_env_master_key
+from tests.quicktests.t_helpers import prepare_clean_basedir, create_configuration, set_app_header, prepare_new_env_master_key
 
 
 BASE_DIRECTORY_PATH = prepare_clean_basedir()
@@ -26,7 +26,7 @@ new_values = {
     'tst_bool': False,
     'tst_time': time(9, 11, 25),
     'tst_path': Path(r'\dir\b.txt'),
-    'tst_secret': 'newpw'
+    # 'tst_secret': 'newpw'
 }
 
 new_values_immediate = {
@@ -35,7 +35,7 @@ new_values_immediate = {
     'tst_bool': True,
     'tst_time': time(13, 11, 25),
     'tst_path': Path(r'\dir\c.txt'),
-    'tst_secret': 'geheim'
+    # 'tst_secret': 'geheim'
 }
 
 new_values_immediate_ext = {

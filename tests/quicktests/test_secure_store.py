@@ -1,8 +1,9 @@
 # Copyright (c) 2025 moenus
 # SPDX-License-Identifier: MIT
 
-from mgconfig import secure_store
-from t_helpers import remove_file, get_test_filepath
+from mgconfig.secure_store import SecureStore
+from mgconfig.secure_store_helpers import generate_key_str
+from tests.quicktests.t_helpers import remove_file, get_test_filepath
 import os
 
 TEST_ITEM_TEXT = 'this is a password test'
@@ -10,14 +11,13 @@ TEST_ITEM_NAME = 'test_password'
 
 KEYSTORE_FILE = get_test_filepath("keystore_test.json")
 
-os.environ["APP_KEY"] = secure_store.generate_key_str()
+os.environ["APP_KEY"] = generate_key_str()
 
 
 class DummyProvider(dict):
     def __init__(self):
         self.dummyprovider = {
             'master_key': 'ZwJrh5riYXfdOj+c9PGQpZjMwbmTnV7G+sopW/qjTyw=',
-            'salt': 'XBGG61LZC+o48Rsqmod2nnZZxTkROW2JuJoopOb/QFg='
         }
 
     def get(self, name):
@@ -36,29 +36,36 @@ def run_cycle(provider1, provider2):
 
 
 def store(provider, text):
-    secure_keystore = secure_store.SecureStore(
-        KEYSTORE_FILE, provider)
-    secure_keystore.store_secret(TEST_ITEM_NAME, text)
-    secure_keystore.save_securestore()
+    with SecureStore(
+        KEYSTORE_FILE, 
+        provider
+        ) as ss:
+        ss.store_secret(TEST_ITEM_NAME, text)
 
 
 def retrieve(provider):
-    secure_keystore = secure_store.SecureStore(
-        KEYSTORE_FILE, provider)
-    test_item_str_decoded = secure_keystore.retrieve_secret(TEST_ITEM_NAME)
-    return test_item_str_decoded
+    with SecureStore(
+        KEYSTORE_FILE, 
+        provider
+        ) as ss:
+        test_item_str_decoded =ss.retrieve_secret(TEST_ITEM_NAME)
+        return test_item_str_decoded
 
 
 def validate_master_key(provider):
-    secure_keystore = secure_store.SecureStore(
-        KEYSTORE_FILE, provider)
-    return secure_keystore.validate_master_key()
+    with SecureStore(
+        KEYSTORE_FILE, 
+        provider
+        ) as ss:
+        return ss.validate_master_key()
 
 
 def prepare_auto_key_exchange(provider):
-    secure_keystore = secure_store.SecureStore(
-        KEYSTORE_FILE, provider)
-    return secure_keystore.prepare_auto_key_exchange()
+    with SecureStore(
+        KEYSTORE_FILE, 
+        provider
+        ) as ss:
+        return ss.prepare_auto_key_exchange()
 
 
 def test_secure_store_module_basic():
@@ -67,21 +74,13 @@ def test_secure_store_module_basic():
     assert run_cycle(provider, provider) == True
     assert validate_master_key(provider) == True
 
-def test_secure_store_module_wrong_salt():
-
-    provider = DummyProvider()
-    provider2 = DummyProvider()
-    # assign wrong salt key
-    provider2.set('salt', secure_store.generate_key_str())
-    assert run_cycle(provider, provider2) == False
-    assert validate_master_key(provider2) == False
 
 def test_secure_store_module_wrong_master():
 
     provider = DummyProvider()
     provider2 = DummyProvider()
     # assign wrong master key
-    provider2.set('master_key', secure_store.generate_key_str())
+    provider2.set('master_key', generate_key_str())
     assert run_cycle(provider, provider2) == False
     assert validate_master_key(provider2) == False
 
@@ -102,6 +101,6 @@ def test_secure_store_key_exchange():
 
 
 if __name__ == '__main__':
-    print(secure_store.generate_key_str())
-    test_secure_store_key_exchange()
+    print(generate_key_str())
+    # test_secure_store_key_exchange()
     print('Finished.')

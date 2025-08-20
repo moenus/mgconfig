@@ -52,7 +52,7 @@ class DefDict:
 
 class ConfigDefs:
     def __init__(self, cfg_defs_filepaths: Union[str, list[str]]):
-        self.config_defs = {}
+        self.cfg_defs = {}
 
         if isinstance(cfg_defs_filepaths, (str, Path)):
             cfg_defs_filepaths = [cfg_defs_filepaths]
@@ -62,7 +62,7 @@ class ConfigDefs:
             if not isinstance(cfg_def_data, list):
                 raise ValueError(
                     f"Invalid config format in {path}, expected a list.")
-            self._parse_config_defs_data(cfg_def_data, self.config_defs)
+            self._parse_config_defs_data(cfg_def_data, self.cfg_defs)
 
     def _parse_config_defs_data(self, config_defs_data: list, config_def_dict) -> list:
         for section in config_defs_data:
@@ -113,6 +113,39 @@ class ConfigDefs:
                 f'Configuration definition: mandatory field "{src_name}" missing.')
         else:
             target.set(cdf, source.get(src_name, default))
+
+
+    def __getitem__(self, key):
+        return self.cfg_defs[key]
+
+    def __setitem__(self, key, value):
+        self.cfg_defs[key] = value
+
+    def __delitem__(self, key):
+        del self.cfg_defs[key]
+
+    def __contains__(self, key):
+        return key in self.cfg_defs
+
+    def keys(self):
+        return self.cfg_defs.keys()
+
+    def values(self):
+        return self.cfg_defs.values()
+
+    def items(self):
+        return self.cfg_defs.items()
+
+    def __iter__(self):
+        return iter(self.cfg_defs)
+
+    def __len__(self):
+        return len(self.cfg_defs)
+
+    def get(self, key, default=None):
+        if key in self.cfg_defs:
+            return self.cfg_defs[key]
+        return default            
 
 
 @dataclass

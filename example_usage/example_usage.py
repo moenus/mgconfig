@@ -6,7 +6,7 @@ from ext_default_functions import default_hostname, default_timezone
 from ext_postprocessing import extend_timezone_configuration, LOCAL_TZ_ID
 from ext_config_types import parse_filename
 import logging
-from ext_app_header import AppHeader
+
 
 CONFIG_DEFINITIONS_YAML = [
     "config_defs/config_def__app.yml",

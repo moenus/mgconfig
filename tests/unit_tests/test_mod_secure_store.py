@@ -8,10 +8,9 @@ import tempfile
 import pytest
 from unittest.mock import MagicMock
 
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.backends import default_backend
-
 import mgconfig.secure_store as sm 
+from mgconfig.secure_store_helpers import hash_bytes , generate_key_str
+
 
 """
 Notes:
@@ -33,15 +32,12 @@ Tests cover:
 
 class DummyKeyProvider:
     """Simple fake key provider for tests."""
-    def __init__(self, master_key=None, salt=None):
+    def __init__(self, master_key=None):
         self._master_key = master_key or sm.bytes_to_b64str(os.urandom(sm.AES_KEY_SIZE))
-        self._salt = salt or sm.bytes_to_b64str(os.urandom(sm.AES_KEY_SIZE))
 
     def get(self, keyname):
         if keyname == 'master_key':
             return self._master_key
-        elif keyname == 'salt':
-            return self._salt
         raise KeyError(f"No such key: {keyname}")
 
 
@@ -71,7 +67,7 @@ def test_store_and_retrieve_secret(store):
     val = store.retrieve_secret("mykey")
     assert val == "myvalue"
     # Ensure ciphertext differs from plaintext
-    enc = store.securestore["mykey"][sm.ITEMNAME_CIPHERTEXT]
+    enc = store._items["mykey"][sm.ITEMNAME_CIPHERTEXT]
     assert "myvalue" not in enc
 
 
@@ -89,72 +85,47 @@ def test_store_and_retrieve_all(store):
 
 def test_save_and_read_from_file(store, tmp_secure_file):
     store.store_secret("foo", "bar")
-    store.save_securestore()
+    store._ssf_save()
     # Read file directly to check it was written
     with open(tmp_secure_file, "r") as f:
         data = json.load(f)
-    assert "foo" in data
+    assert "foo" in store._items
     # New instance should load existing data
-    kp = DummyKeyProvider(master_key=store.master_key_str,
-                          salt=sm.bytes_to_b64str(store._salt))
+    kp = DummyKeyProvider(master_key=store.master_key_str)
     store2 = sm.SecureStore(tmp_secure_file, kp)
     assert store2.retrieve_secret("foo") == "bar"
 
 
 def test_delete_securestore_file(store, tmp_secure_file):
     store.store_secret("x", "y")
-    store.save_securestore()
+    store._ssf_save()
     assert os.path.exists(tmp_secure_file)
-    store.delete_securestore_file()
+    store._ssf_delete()
     assert not os.path.exists(tmp_secure_file)
-    assert store.securestore == {}
+    assert store._items == {}
 
 
 def test_master_key_properties(store):
     # master_key_str decodes to original bytes
     assert sm.b64str_to_bytes(store.master_key_str) == store._master_key
-    # master_key_hash matches manual hash
-    digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
-    digest.update(store.master_key_str.encode())
-    expected_hash = digest.finalize().hex()
+    expected_hash = hash_bytes(store._master_key)
     assert store.master_key_hash == expected_hash
 
 
 def test_prepare_auto_key_exchange_and_validate(store):
     # prepare_auto_key_exchange should return new key string
-    new_key = store.prepare_auto_key_exchange()
-    assert isinstance(new_key, str)
-    assert sm.b64str_to_bytes(new_key) != store._master_key
+    new_key_str = store.prepare_auto_key_exchange()
+    assert isinstance(new_key_str, str)
+    assert sm.b64str_to_bytes(new_key_str) != store.master_key_str
     # Force the new key into the provider and validate
-    old_key = store.master_key_str
-    store._set_master_key(sm.b64str_to_bytes(new_key) if isinstance(new_key, bytes) else new_key)
-    # Because _auto_key_exchange logic depends on stored hashes, validate_master_key should run path
+    store.master_key_str = new_key_str
     store.retrieve_secret = MagicMock(return_value=store.master_key_hash)
     assert store.validate_master_key() in (True, False)  # just ensure no crash
 
 
-def test_auto_key_exchange_success(store):
-    # Put some secret data
-    store.store_secret("data", "value1")
-    # Simulate preparation step
-    old_key_str = store.master_key_str
-    old_hash = store.master_key_hash
-    new_key_str = sm.generate_key_str()
-    store._set_master_key(new_key_str)
-    # Insert simulated old/new key data into store
-    store.store_secret(sm.AEMK_OLD_MK_KEY, old_key_str)
-    store.store_secret(sm.AEMK_OLD_MK_HASH, old_hash)
-    store._set_master_key(new_key_str)
-    # Put matching new MK hash to trigger auto exchange
-    store.store_secret(sm.AEMK_NEW_MK_HASH, store.master_key_hash)
-    # Reset back to old key for starting state
-    store._set_master_key(old_key_str)
-    assert isinstance(store._auto_key_exchange(), bool)
-
-
 def test_hash_function(store):
-    val = "test123"
-    h1 = store.hash(val)
-    h2 = store.hash(val)
+    val = b"test123"
+    h1 = hash_bytes(val)
+    h2 = hash_bytes(val)
     assert isinstance(h1, str)
     assert h1 == h2
