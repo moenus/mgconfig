@@ -78,37 +78,3 @@ def test_configuration_settings():
     config = create_configuration()      # read in the saved configuration
     for key, value in new_values_immediate.items():
         assert config.get(key) == value
-
-
-def configuration_values_print():
-    def prep(value):
-        return (f'{value}: {type(value).__name__}').ljust(25)
-
-    config = create_configuration()
-    for key, value in new_values.items():
-        config.save_new_value(key, value)
-    print('------------------------------------')
-    for row in config.data_rows:
-        print(str(row))
-
-    print('------------------------------------')
-    for config_def in config._cfg_def_dict.values():
-        id = config_def.config_id
-        val_main = prep(config.__dict__.get(id))
-        val_obj = config._config_values.get(id)
-        val_type = config_def.config_type
-        if val_obj:
-            val_src = prep(val_obj.value_src)
-            val_out = prep(val_obj.output_current())
-            val_str = prep(val_obj.display_current())
-        else:
-            val_src = val_out = val_str = ''
-        print(f'{(f'{id}: {val_type}').ljust(25)} {
-              val_main} {val_src} {val_out} {val_str}')
-
-
-if __name__ == '__main__':
-    # test_configuration_reading()
-
-    configuration_values_print()
-    print('finished successfully')

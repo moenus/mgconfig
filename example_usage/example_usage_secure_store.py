@@ -6,10 +6,10 @@ from mgconfig.secure_store_helpers import generate_key_str
 from tests.quicktests.t_helpers import remove_file, get_test_filepath
 import os
 
-TEST_ITEM_TEXT = 'this is a password test'
-TEST_ITEM_NAME = 'test_password'
+DEMO_ITEM_TEXT = 'this is a password test'
+DEMO_ITEM_NAME = 'test_password'
 
-KEYSTORE_FILE = get_test_filepath("keystore_test.json")
+KEYSTORE_FILE = get_test_filepath("keystore_demo.json")
 
 os.environ["APP_KEY"] = generate_key_str()
 
@@ -31,8 +31,8 @@ class DummyProvider(dict):
 def run_cycle(provider1, provider2):
     print(f'\n------------------------------- start cycle with empty file store')
     remove_file(KEYSTORE_FILE)
-    store(provider1, TEST_ITEM_TEXT)
-    return TEST_ITEM_TEXT == retrieve(provider2)
+    store(provider1, DEMO_ITEM_TEXT)
+    return DEMO_ITEM_TEXT == retrieve(provider2)
 
 
 def store(provider, text):
@@ -40,7 +40,7 @@ def store(provider, text):
         KEYSTORE_FILE, 
         provider
         ) as ss:
-        ss.store_secret(TEST_ITEM_NAME, text)
+        ss.store_secret(DEMO_ITEM_NAME, text)
 
 
 def retrieve(provider):
@@ -48,7 +48,7 @@ def retrieve(provider):
         KEYSTORE_FILE, 
         provider
         ) as ss:
-        test_item_str_decoded =ss.retrieve_secret(TEST_ITEM_NAME)
+        test_item_str_decoded =ss.retrieve_secret(DEMO_ITEM_NAME)
         return test_item_str_decoded
 
 

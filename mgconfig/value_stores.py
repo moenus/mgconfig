@@ -84,7 +84,7 @@ class ValueStore (ABC):
             if not found.
         """
         if item_id in self.cfg_defs:
-            return self.cfg_defs.get(item_id).get(property_name)
+            return self.cfg_defs.get(item_id).get_property(property_name)
 
 
 class ValueStoreSecure(ValueStore):

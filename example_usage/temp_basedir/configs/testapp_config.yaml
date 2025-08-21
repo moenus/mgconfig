@@ -1,0 +1,6 @@
+test-definitions:
+  bool: false
+  integer: 500
+  path: /dir/b.txt
+  string: newstring
+  time: 09:11:25
