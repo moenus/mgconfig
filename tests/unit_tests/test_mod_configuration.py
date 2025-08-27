@@ -1,133 +1,87 @@
-# test_configuration.py
 import pytest
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch, MagicMock
 
-import mgconfig.configuration
-
-
-@pytest.fixture(autouse=True)
-def reset_configuration():
-    """Ensure singleton is reset before/after each test."""
-    mgconfig.configuration.Configuration.reset()
-    yield
-    mgconfig.configuration.Configuration.reset()
+import mgconfig.configuration as configuration
 
 
 @pytest.fixture
-def mock_cfg_defs_and_values():
-    # Mock ConfigDef
-    mock_cfg_def = MagicMock()
-    mock_cfg_def.config_section = "section"
-    mock_cfg_def.config_name = "name"
-    mock_cfg_def.config_env = "ENV_VAR"
-    mock_cfg_def.config_default = "default"
-    mock_cfg_def.config_type = "str"
-    mock_cfg_def.config_id = "test_id"
-    mock_cfg_def.config_readonly = False
+def mock_config_env(monkeypatch):
+    # Mock config_values
+    mock_def = MagicMock()
+    mock_def.config_section = "section"
+    mock_def.config_name = "name"
+    mock_def.config_env = "ENV_VAR"
+    mock_def.config_default = "default"
+    mock_def.config_type = "string"
+    mock_def.config_id = "test_id"
+    mock_def.config_readonly = False
 
-    # Mock ConfigValue
-    mock_cfg_value = MagicMock()
-    mock_cfg_value.value = "value"
-    mock_cfg_value.value_new = None
-    mock_cfg_value.source = "default"
-    mock_cfg_value.display_current.return_value = "value"
-    mock_cfg_value.display_new.return_value = "new_value"
+    mock_value = MagicMock()
+    mock_value.cfg_def = mock_def
+    mock_value.value = "current"
+    mock_value.source = "file"
+    mock_value.__str__.return_value = "current"
 
-    # Mock ConfigValues
-    mock_cfg_values = MagicMock()
-    mock_cfg_values.__getitem__.return_value = mock_cfg_value
-    mock_cfg_values.__contains__.side_effect = lambda key: key == "test_id"
-    mock_cfg_values.__iter__.return_value = iter(["test_id"])
-    mock_cfg_values.save_new_value = MagicMock()
+    monkeypatch.setattr(configuration, "config_values", {"test_id": mock_value})
+    monkeypatch.setattr(configuration, "config_values_new", {"test_id": MagicMock(__str__=lambda self: "new")})
 
-    # Patch imports inside configuration
-    with patch("mgconfig.configuration.ConfigDefs", return_value={"test_id": mock_cfg_def}), \
-         patch("mgconfig.configuration.ConfigValues", return_value=mock_cfg_values), \
-         patch("mgconfig.configuration.PostProcessing", return_value=MagicMock(dict={})):
-        yield mock_cfg_def, mock_cfg_value, mock_cfg_values
+    return mock_value
 
 
-def test_singleton_behavior(mock_cfg_defs_and_values):
-    cfg1 = mgconfig.configuration.Configuration("file")
-    cfg2 = mgconfig.configuration.Configuration("file")
-    assert cfg1 is cfg2  # singleton must return same instance
+@pytest.fixture
+def mock_handlers(monkeypatch):
+    monkeypatch.setattr(configuration, "ConfigDefs", MagicMock())
+    monkeypatch.setattr(configuration, "ConfigValueHandler", MagicMock())
+    monkeypatch.setattr(configuration, "PostProcessing", MagicMock(return_value=MagicMock(dict={})))
+    return configuration.ConfigValueHandler
 
 
-def test_init_sets_attributes(mock_cfg_defs_and_values):
-    _, mock_cfg_value, _ = mock_cfg_defs_and_values
-    cfg = mgconfig.configuration.Configuration("file")
-    # attribute from config values is set on instance
-    assert cfg.test_id == mock_cfg_value.value
-    # extended namespace created
-    assert isinstance(cfg.extended, SimpleNamespace)
+def test_initialization_and_get_value(mock_config_env, mock_handlers):
+    configuration.Configuration.reset_instance()
+    cfg = configuration.Configuration(cfg_defs_filepaths="dummy.json")
+    assert cfg.get_value("test_id") == "current"
+    assert cfg["test_id"] == "current"
+    assert "test_id" in cfg
 
 
-def test_get_existing_and_missing(mock_cfg_defs_and_values):
-    cfg = mgconfig.configuration.Configuration("file")
-    assert cfg.get("test_id") == "value"
-    assert cfg.get("missing") is None
+def test_get_value_fail_on_error(mock_config_env, mock_handlers):
+    cfg = configuration.Configuration("dummy.json")
     with pytest.raises(ValueError):
-        cfg.get("missing", fail_on_error=True)
+        cfg.get_value("unknown", fail_on_error=True)
 
 
-def test_get_config_value(mock_cfg_defs_and_values):
-    _, mock_cfg_value, _ = mock_cfg_defs_and_values
-    cfg = mgconfig.configuration.Configuration("file")
-    assert cfg.get_config_value("test_id") is mock_cfg_value
+def test_get_config_object(mock_config_env, mock_handlers):
+    cfg = configuration.Configuration("dummy.json")
+    obj = cfg.get_config_object("test_id")
+    assert obj is mock_config_env
+
+
+def test_get_config_object_missing(mock_handlers):
+    cfg = configuration.Configuration("dummy.json")
     with pytest.raises(ValueError):
-        cfg.get_config_value("missing")
+        cfg.get_config_object("missing")
 
 
-def test_get_cfg_def(mock_cfg_defs_and_values):
-    mock_cfg_def, _, _ = mock_cfg_defs_and_values
-    cfg = mgconfig.configuration.Configuration("file")
-    assert cfg.get_cfg_def("test_id") is mock_cfg_def
-    with pytest.raises(ValueError):
-        cfg.get_cfg_def("missing")
-
-
-def test_data_rows_without_new_value(mock_cfg_defs_and_values):
-    cfg = mgconfig.configuration.Configuration("file")
+def test_data_rows_contains_current_and_new(mock_config_env, mock_handlers):
+    cfg = configuration.Configuration("dummy.json")
     rows = cfg.data_rows
-    assert len(rows) == 1
-    assert rows[0][1] == "name"  # config_name
+    assert any("current" in row for row in rows)
+    assert any("new" in row for row in rows)
 
 
-def test_data_rows_with_new_value(mock_cfg_defs_and_values):
-    _, mock_cfg_value, _ = mock_cfg_defs_and_values
-    mock_cfg_value.value_new = "something"
-    cfg = mgconfig.configuration.Configuration("file")
-    rows = cfg.data_rows
-    assert len(rows) == 2
-    # second row should use display_new
-    assert rows[1][5] == "new_value"
+def test_save_new_value_applies_immediately(mock_config_env, mock_handlers):
+    mock_handlers.save_new_value.return_value = True
+    mock_config_env.cfg_def.config_type = "secret"
+    cfg = configuration.Configuration("dummy.json")
+    result = cfg.save_new_value("test_id", "new_value", apply_immediately=True)
+    assert result is True
+    assert cfg.get_value("test_id") == "new_value"
 
 
-def test_save_new_value_apply_immediately(mock_cfg_defs_and_values):
-    _, mock_cfg_value, mock_cfg_values = mock_cfg_defs_and_values
-    cfg = mgconfig.configuration.Configuration("file")
-    cfg.save_new_value("test_id", "new_val", apply_immediately=True)
-
-    mock_cfg_values.save_new_value.assert_called_once_with("test_id", "new_val", True)
-    # attribute was updated from ConfigValue.value
-    assert cfg.test_id == mock_cfg_value.value
-
-
-def test_save_new_value_no_apply(mock_cfg_defs_and_values):
-    _, mock_cfg_value, mock_cfg_values = mock_cfg_defs_and_values
-    cfg = mgconfig.configuration.Configuration("file")
-    cfg.save_new_value("test_id", "new_val", apply_immediately=False)
-
-    mock_cfg_values.save_new_value.assert_called_once_with("test_id", "new_val", False)
-    # instance attribute stays the same
-    assert cfg.test_id == mock_cfg_value.value
-
-
-def test_extended_items(mock_cfg_defs_and_values):
-    cfg = mgconfig.configuration.Configuration("file")
-    assert not cfg.extended_item_exists("foo")
-    cfg.set_extended_item("foo", 123)
-    assert cfg.extended_item_exists("foo")
-    assert cfg.get_extended_item("foo") == 123
-    assert cfg.get_extended_item("bar") is None
+def test_extended_items(mock_handlers):
+    cfg = configuration.Configuration("dummy.json")
+    cfg.set_extended_item("extra", 42)
+    assert cfg.extended_item_exists("extra")
+    assert cfg.get_extended_item("extra") == 42
+    assert cfg.get_extended_item("missing") is None

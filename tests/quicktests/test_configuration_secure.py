@@ -12,18 +12,21 @@ BASE_DIRECTORY_PATH = prepare_clean_basedir()
 
 def test_configuration_secrets():
     prepare_new_env_master_key()
+    prepare_clean_basedir()
+    
     config = create_configuration()
 
-    assert config.save_new_value(CONFIG_ID,'passwort_1') is None
-    assert config.get_config_value(CONFIG_ID)._value_new == 'passwort_1' 
+    assert config.save_new_value(CONFIG_ID,'passwort_1')
+    assert config.get_config_object(CONFIG_ID).value == 'passwort_1' 
 
   
-    # new_masterkey = get_new_masterkey()
-    # os.environ["APP_KEY"] = new_masterkey
+    new_masterkey = get_new_masterkey()
+    assert isinstance(new_masterkey, str)
+    os.environ["APP_KEY"] = new_masterkey
 
-    # config = create_configuration()     # read in a second time after changing masterkey
+    config = create_configuration()     # read in a second time after changing masterkey
 
-    # assert config._config_values[CONFIG_ID].value == 'passwort_1'
+    assert config.tst_secret == 'passwort_1'
      
     # config.save_new_value(CONFIG_ID,'passwort_2',apply_immediately=True)
     # assert config._config_values[CONFIG_ID].value == 'passwort_2' 
@@ -32,7 +35,3 @@ def test_configuration_secrets():
 
     # assert config._config_values[CONFIG_ID].value == 'passwort_2'
     
-
-if __name__ == '__main__':
-    test_configuration_secrets()
-    print('finished successfully')

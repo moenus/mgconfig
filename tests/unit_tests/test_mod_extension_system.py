@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 # test_defaults_dict.py
 import pytest
 from types import MappingProxyType

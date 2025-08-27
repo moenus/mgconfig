@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from .helpers import config_keyfile, config_service_name, ConstConfig, logger
 from typing import Any, Dict, Optional
+from .config_values import config_values
 
 
 class KeyStore:
@@ -70,7 +71,7 @@ class KeyStore:
                 f'Configuration item {name} for keystore {self.keystore_name} is missing.')
         return self.params[name]
 
-    def configure(self, config_params=None):
+    def configure(self):
         """Configure the keystore with required parameters.
 
         Args:
@@ -80,14 +81,17 @@ class KeyStore:
             ValueError: If any mandatory parameter is missing.
         """
         self.params = {}
-        if config_params is not None:
-            for conf_name in self.mandatory_conf_names:
-                const_config = ConstConfig(conf_name)
-                self.params[conf_name] = config_params.get(
-                    const_config.config_id)
-                if self.params[conf_name] is None:
-                    raise ValueError(
-                        f'Mandatory parameter {conf_name} for keystore {self.keystore_name} not found.')
+
+        for conf_name in self.mandatory_conf_names:
+            const_config = ConstConfig(conf_name)
+            config_value = config_values.get(const_config.config_id)
+            if config_value is None:
+                raise ValueError(
+                    f'Configuration ID {const_config.config_id} for keystore {self.keystore_name} not found.')
+            self.params[conf_name] = config_value.value
+            if self.params[conf_name] is None:
+                raise ValueError(
+                    f'Mandatory parameter {conf_name} for keystore {self.keystore_name} not found.')
 
     def check_configuration(self):
         """Validate that the keystore has been properly configured.

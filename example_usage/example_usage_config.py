@@ -9,6 +9,7 @@ from mgconfig.secure_store import SecureStore
 import shutil
 from mgconfig import Configuration, DefaultValues
 from mgconfig.secure_store_helpers import generate_key_str
+from mgconfig.config_values import config_values
 
 
 CONFIG_DEFINITIONS_YAML = [
@@ -92,9 +93,9 @@ def test_configuration_reading():
     assert config.app_name == test_values['app_name']
 
     for key, value in test_values.items():
-        assert config.get(key) == value
+        assert config.get_value(key) == value
 
-    for config_value in config._config_values.values():
+    for config_value in config_values.values():
         assert config_value.value_src == config_value.output_current()
 
 
@@ -104,22 +105,22 @@ def test_configuration_settings():
 
     for key, value in new_values.items():
         config.save_new_value(key, value)
-        assert config._config_values[key].value_new == value
+        assert config_values.get(key).value_new == value
 
     config = create_configuration()     # read in a second time with new values
 
     for key, value in new_values.items():
-        assert config._config_values[key].value == value
+        assert config_values.get(key).value == value
 
     for key, value in new_values_immediate.items():
         config.save_new_value(key, value, apply_immediately=True)
-        assert config._config_values[key].value_new == None
-        assert config._config_values[key].value == value
+        assert config_values.get(key).value_new == None
+        assert config_values.get(key).value == value
         assert config.__dict__[key] == value
 
     config = create_configuration()      # read in the saved configuration
     for key, value in new_values_immediate.items():
-        assert config.get(key) == value
+        assert config.get_value(key) == value
 
 
 def configuration_values_print():
@@ -137,7 +138,7 @@ def configuration_values_print():
     for config_def in config._cfg_def_dict.values():
         id = config_def.config_id
         val_main = prep(config.__dict__.get(id))
-        val_obj = config._config_values.get(id)
+        val_obj = config_values.get(id)
         val_type = config_def.config_type
         if val_obj:
             val_src = prep(val_obj.value_src)

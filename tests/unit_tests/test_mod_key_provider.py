@@ -1,92 +1,119 @@
 import pytest
-from unittest.mock import MagicMock, patch
-from mgconfig.key_provider import Key, KeyProvider, get_from_conf, MASTERKEYNAME
+from unittest.mock import patch, MagicMock
+
+from mgconfig import key_provider
 
 
-# --- Tests for Key class ---
-def test_key_value_retrieval_and_cache():
-    mock_keystore = MagicMock()
-    mock_keystore.get.return_value = "secret_value"
-
-    with patch("mgconfig.key_provider.KeyStores.get", return_value=mock_keystore):
-        key = Key("teststore", "testitem")
-        # Value should be retrieved from keystore
-        assert key.value == "secret_value"
-        # Cached value should be used on second access
-        mock_keystore.get.assert_called_once()
-        assert key.value == "secret_value"
+@pytest.fixture
+def mock_keystore():
+    """Fixture to create a mocked keystore with get/set/configure."""
+    keystore = MagicMock()
+    keystore.get.return_value = "secret_value"
+    keystore.set = MagicMock()
+    keystore.configure = MagicMock()
+    return keystore
 
 
-def test_key_value_setter_updates_keystore_and_cache():
-    mock_keystore = MagicMock()
-    with patch("mgconfig.key_provider.KeyStores.get", return_value=mock_keystore):
-        key = Key("teststore", "testitem")
-        key.value = "new_value"
-        mock_keystore.set.assert_called_once_with("testitem", "new_value")
-        assert key._item_value == "new_value"
+# ----------------------------
+# Tests for Key
+# ----------------------------
+def test_key_value_retrieves_from_keystore(mock_keystore):
+    with patch.object(key_provider.KeyStores, "get", return_value=mock_keystore):
+        key = key_provider.Key("store1", "item1")
+
+        # First access triggers _retrieve_key
+        val = key.value
+        assert val == "secret_value"
+        mock_keystore.get.assert_called_once_with("item1")
+
+        # Second access uses cached value (get not called again)
+        val2 = key.value
+        assert val2 == "secret_value"
+        mock_keystore.get.assert_called_once()  # still only 1 call
 
 
-def test_key_retrieve_raises_when_value_missing():
-    mock_keystore = MagicMock()
+def test_key_value_set_saves_and_caches(mock_keystore):
+    with patch.object(key_provider.KeyStores, "get", return_value=mock_keystore):
+        key = key_provider.Key("store1", "item1")
+        key.value = "new_secret"
+        mock_keystore.set.assert_called_once_with("item1", "new_secret")
+        assert key._item_value == "new_secret"
+        assert str(key) == "new_secret"
+
+
+def test_key_retrieve_key_raises_if_none(mock_keystore):
     mock_keystore.get.return_value = None
-    with patch("mgconfig.key_provider.KeyStores.get", return_value=mock_keystore):
-        key = Key("teststore", "missing_item")
-        with pytest.raises(ValueError):
+    with patch.object(key_provider.KeyStores, "get", return_value=mock_keystore):
+        key = key_provider.Key("store1", "item1")
+        with pytest.raises(ValueError, match="cannot provide a value"):
             _ = key.value
 
 
-# --- Tests for get_from_conf ---
+# ----------------------------
+# Tests for get_from_conf
+# ----------------------------
 def test_get_from_conf_returns_value():
-    conf = {"sec_test_key_item_name": "value123"}
-    with patch("mgconfig.key_provider.lazy_build_config_id", return_value="sec_test_key_item_name"):
-        assert get_from_conf(conf, "test_key", "item_name") == "value123"
+    fake_config_id = "SEC_master_key_item_name"
+    fake_config_value = MagicMock()
+    fake_config_value.value = "expected"
+
+    with patch("mgconfig.key_provider.lazy_build_config_id", return_value=fake_config_id), \
+         patch.object(key_provider, "config_values", {fake_config_id: fake_config_value}):
+        val = key_provider.get_from_conf("master_key", "item_name")
+        assert val == "expected"
 
 
-def test_get_from_conf_raises_if_missing():
-    conf = {}
-    with patch("mgconfig.key_provider.lazy_build_config_id", return_value="sec_missing_item"):
-        with pytest.raises(ValueError):
-            get_from_conf(conf, "missing_key", "item_name")
+def test_get_from_conf_missing_raises():
+    fake_config_id = "SEC_master_key_item_name"
+    with patch("mgconfig.key_provider.lazy_build_config_id", return_value=fake_config_id), \
+         patch.object(key_provider, "config_values", {}):
+        with pytest.raises(ValueError, match="Cannot find"):
+            key_provider.get_from_conf("master_key", "item_name")
 
 
-# --- Tests for KeyProvider ---
-def test_keyprovider_initialization_and_get(monkeypatch):
-    mock_keystore = MagicMock()
-    mock_keystore.get.return_value = "mock_value"
-    mock_keystore.configure = MagicMock()
-    
-    # Patch KeyStores methods
-    monkeypatch.setattr("mgconfig.key_provider.KeyStores.get", lambda name: mock_keystore)
-    monkeypatch.setattr("mgconfig.key_provider.KeyStores.contains", lambda name: True)
+# ----------------------------
+# Tests for KeyProvider
+# ----------------------------
+def test_keyprovider_initialization_and_get_set(mock_keystore):
+    """Ensure KeyProvider loads config and can get/set values."""
+    with patch("mgconfig.key_provider.get_from_conf", side_effect=["store1", "item1"]), \
+         patch.object(key_provider.KeyStores, "contains", return_value=True), \
+         patch.object(key_provider.KeyStores, "get", return_value=mock_keystore):
 
-    # Configuration mock
-    conf = {
-        "sec_salt_keystore": "ks1",
-        "sec_salt_item_name": "salt_item",
-        "sec_master_key_keystore": "ks1",
-        "sec_master_key_item_name": "master_item"
-    }
+        provider = key_provider.KeyProvider()
+        assert "master_key" in provider._keys
 
-    with patch("mgconfig.key_provider.get_from_conf", side_effect=lambda c, k, v: conf[f"sec_{k}_{v}"]):
-        provider = KeyProvider(conf)
-        # Test getting a key value
-        assert provider.get(MASTERKEYNAME) == "mock_value"
+        # get() retrieves value from keystore
+        val = provider.get("master_key")
+        assert val == "secret_value"
+
+        # set() updates both keystore and cache
+        provider.set("master_key", "new_val")
+        mock_keystore.set.assert_called_with("item1", "new_val")
 
 
-def test_keyprovider_get_set_raises_for_invalid_key(monkeypatch):
-    mock_keystore = MagicMock()
-    monkeypatch.setattr("mgconfig.key_provider.KeyStores.get", lambda name: mock_keystore)
-    monkeypatch.setattr("mgconfig.key_provider.KeyStores.contains", lambda name: True)
-    conf = {
-        "sec_salt_keystore": "ks1",
-        "sec_salt_item_name": "salt_item",
-        "sec_master_key_keystore": "ks1",
-        "sec_master_key_item_name": "master_item"
-    }
+def test_keyprovider_invalid_keystore_raises():
+    with patch("mgconfig.key_provider.get_from_conf", return_value="invalid_store"), \
+         patch.object(key_provider.KeyStores, "contains", return_value=False):
+        with pytest.raises(ValueError, match="Invalid keystore name"):
+            key_provider.KeyProvider()
 
-    with patch("mgconfig.key_provider.get_from_conf", side_effect=lambda c, k, v: conf[f"sec_{k}_{v}"]):
-        provider = KeyProvider(conf)
-        with pytest.raises(KeyError):
-            provider.get("invalid_key")
-        with pytest.raises(KeyError):
-            provider.set("invalid_key", "value")
+
+def test_keyprovider_get_nonexistent_key_raises():
+    with patch("mgconfig.key_provider.get_from_conf", side_effect=["store1", "item1"]), \
+         patch.object(key_provider.KeyStores, "contains", return_value=True), \
+         patch.object(key_provider.KeyStores, "get", return_value=MagicMock()):
+
+        provider = key_provider.KeyProvider()
+        with pytest.raises(KeyError, match="not found"):
+            provider.get("other_key")
+
+
+def test_keyprovider_set_nonexistent_key_raises():
+    with patch("mgconfig.key_provider.get_from_conf", side_effect=["store1", "item1"]), \
+         patch.object(key_provider.KeyStores, "contains", return_value=True), \
+         patch.object(key_provider.KeyStores, "get", return_value=MagicMock()):
+
+        provider = key_provider.KeyProvider()
+        with pytest.raises(KeyError, match="not found"):
+            provider.set("other_key", "value")

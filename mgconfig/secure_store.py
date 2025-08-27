@@ -404,8 +404,8 @@ class SecureStore:
         unencrypted_values = self.retrieve_all_secrets()
 
         self.master_key_str = new_master_key_str
-        self.store_all_secrets(unencrypted_values)
         self._header.mk_hash = self.master_key_hash
+        self.store_all_secrets(unencrypted_values)
         self._ssf_save(force=True)
         logger.info('Master key successfully exchanged.')
         return True

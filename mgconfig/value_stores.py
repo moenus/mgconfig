@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from enum import Enum
 from pathlib import Path
 from abc import ABC, abstractmethod
+from .config_values import config_values
 
 
 class ConfigValueSource(str, Enum):
@@ -27,18 +28,22 @@ class ValueStore (ABC):
 
     Subclasses must implement both `save_value` and `retrieve_value`.
     """
+    _instance = None
 
-    def __init__(self, source: ConfigValueSource, cfg_defs: ConfigDefs):
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    def __init__(self, source: ConfigValueSource):
         """Initializes a value store.
 
         Args:
             source (ConfigValueSource): The source type of configuration values
                 (e.g., CFGFILE, ENV_VAR, DEFAULT, ENCRYPT).
-            cfg_defs (ConfigDefs): Configuration definitions used for lookup.
         """
-        self.source = source
-        self.cfg_defs = cfg_defs
-
+        if not hasattr(self, "_source"):  # avoid re-initializing
+            self._source = source
 
     @abstractmethod
     def save_value(self, item_id: str, value: Any) -> bool:
@@ -72,37 +77,18 @@ class ValueStore (ABC):
         """
         pass
 
-    def _get_cfg_def_value(self, item_id: str, property_name: str) -> Optional[str]:
-        """Retrieves a configuration definition property for an item.
-
-        Args:
-            item_id (str): Identifier of the configuration item.
-            property_name (str): The property name in the configuration definition.
-
-        Returns:
-            Optional[str]: The configuration definition property value, or None
-            if not found.
-        """
-        if item_id in self.cfg_defs:
-            return self.cfg_defs.get(item_id).get_property(property_name)
-
 
 class ValueStoreSecure(ValueStore):
     """Value store for securely storing sensitive data in a secure store file."""
 
-    def __init__(self, cfg_defs: ConfigDefs, init_config: Dict[str, str] = None):
+    def __init__(self):
         """Initialize a file-based secure value store for storing secret strings like passwords.
-
-        Args:
-            cfg_defs (ConfigDefs): Configuration definitions for lookup.
-            init_config (Dict[str, str]): Initialization values containing paths
-                and credentials for secure storage.
         """
-        super().__init__(ConfigValueSource.ENCRYPT, cfg_defs)
-        self.securestore_file = init_config.get(
-            config_securestorefile.config_id)
+        super().__init__(ConfigValueSource.ENCRYPT)
+        self.securestore_file = config_values.get(
+            config_securestorefile.config_id).value
         # initialize key provider with the configuration values from Configuration object
-        self.key_provider = KeyProvider(init_config)
+        self.key_provider = KeyProvider()
         try:
             secure_store = self._get_new_secure_store()
             if not secure_store.validate_master_key():
@@ -156,10 +142,10 @@ class ValueStoreSecure(ValueStore):
         """
         try:
             secure_store = self._get_new_secure_store()
-            return secure_store.retrieve_secret(item_id), self.source
+            return secure_store.retrieve_secret(item_id), self._source
         except Exception as e:
             logger.error(f'Cannot retrieve secret value for id {item_id}: {e}')
-            return None, self.source
+            return None, self._source
 
     def prepare_new_masterkey(self) -> str:
         """Prepares a new master key for the secure store.
@@ -180,16 +166,12 @@ class ValueStoreSecure(ValueStore):
 class ValueStoreFile(ValueStore):
     """Value store that retrieves and stores configuration data in a YAML file."""
 
-    def __init__(self, cfg_defs: ConfigDefs, init_config: Dict[str, str] = None):
+    def __init__(self):
         """Initializes a file-based value store.
 
-        Args:
-            cfg_defs (ConfigDefs): Configuration definitions for lookup.
-            init_config (Dict[str, str]): Initialization values containing the path
-                to the configuration file.
         """
-        super().__init__(ConfigValueSource.CFGFILE, cfg_defs)
-        self.config_file = init_config.get(config_configfile.config_id)
+        super().__init__(ConfigValueSource.CFGFILE)
+        self.config_file = config_values.get(config_configfile.config_id, fail_on_error = True).value
         self.configfile_content = self._read_configfile()
 
     def _read_configfile(self) -> dict[str, Any]:
@@ -218,11 +200,11 @@ class ValueStoreFile(ValueStore):
             tuple[Any, ConfigValueSource]: The retrieved value (or None if not found)
             and the source type.
         """
-        config_section = self._get_cfg_def_value(item_id, str(CDF.SECTION))
-        config_name = self._get_cfg_def_value(item_id, str(CDF.NAME))
+        config_section = ConfigDefs.cfg_def_property(item_id, str(CDF.SECTION))
+        config_name = ConfigDefs.cfg_def_property(item_id, str(CDF.NAME))
         if config_section in self.configfile_content and config_name in self.configfile_content[config_section]:
-            return self.configfile_content[config_section][config_name], self.source
-        return None, self.source
+            return self.configfile_content[config_section][config_name], self._source
+        return None, self._source
 
     def save_value(self, item_id, value) -> bool:
         """Saves a value to the YAML configuration file.
@@ -234,8 +216,8 @@ class ValueStoreFile(ValueStore):
         Returns:
             bool: True if saved successfully, False otherwise.
         """
-        config_section = self._get_cfg_def_value(item_id, str(CDF.SECTION))
-        config_name = self._get_cfg_def_value(item_id, str(CDF.NAME))
+        config_section = ConfigDefs.cfg_def_property(item_id, str(CDF.SECTION))
+        config_name = ConfigDefs.cfg_def_property(item_id, str(CDF.NAME))
         if config_section not in self.configfile_content:
             self.configfile_content[config_section] = {}
         self.configfile_content[config_section][config_name] = value
@@ -268,14 +250,11 @@ class ValueStoreFile(ValueStore):
 class ValueStoreEnv(ValueStore):
     """Value store that retrieves configuration values from environment variables."""
 
-    def __init__(self, cfg_defs: ConfigDefs, init_config: Dict[str, str] = None):
+    def __init__(self):
         """Initializes an environment-variable-based value store.
 
-        Args:
-            cfg_defs (ConfigDefs): Configuration definitions for lookup.
-            init_config (Dict[str, str]): Optional initialization values.
         """
-        super().__init__(ConfigValueSource.ENV_VAR, cfg_defs)
+        super().__init__(ConfigValueSource.ENV_VAR)
 
     def retrieve_value(self, item_id: str) -> tuple[Any, ConfigValueSource]:
         """Retrieves a value from an environment variable.
@@ -287,10 +266,10 @@ class ValueStoreEnv(ValueStore):
             tuple[Any, ConfigValueSource]: The retrieved environment variable value
             (or None if not set) and the source type.
         """
-        config_env = self._get_cfg_def_value(item_id, str(CDF.ENV))
+        config_env = ConfigDefs.cfg_def_property(item_id, str(CDF.ENV))
         if config_env is not None:
-            return os.getenv(config_env), self.source
-        return None, self.source
+            return os.getenv(config_env), self._source
+        return None, self._source
 
     def save_value(self, item_id: str, value: Any) -> bool:
         """Raises NotImplementedError since environment variables are read-only."""        
@@ -300,14 +279,11 @@ class ValueStoreEnv(ValueStore):
 class ValueStoreDefault(ValueStore):
     """Value store that retrieves default configuration values from definitions."""
 
-    def __init__(self, cfg_defs: ConfigDefs, init_config: Dict[str, str] = None):
+    def __init__(self):
         """Initializes a value store with default values.
 
-        Args:
-            cfg_defs (ConfigDefs): Configuration definitions for lookup.
-            init_config (Dict[str, str]): Optional initialization values.
         """
-        super().__init__(ConfigValueSource.DEFAULT, cfg_defs)
+        super().__init__(ConfigValueSource.DEFAULT)
 
     def retrieve_value(self, item_id: str) -> tuple[Any, str]:
         """Retrieves a default value from the configuration definition.
@@ -319,82 +295,15 @@ class ValueStoreDefault(ValueStore):
             tuple[Any, ConfigValueSource]: The default value (or None if not defined)
             and the source type.
         """
-        config_default = self._get_cfg_def_value(item_id, str(CDF.DEFAULT))
+        config_default = ConfigDefs.cfg_def_property(item_id, str(CDF.DEFAULT))
         if config_default:
-            return config_default, self.source
-        return None, self.source
+            return config_default, self._source
+        return None, self._source
 
     def save_value(self, item_id: str, value: Any) -> bool:
         """Raises NotImplementedError since defaults are read-only."""        
         raise NotImplementedError("Default value store is read-only")
 
-
-class ValueStores:
-    """Factory and registry for initialized value store instances."""
-
-    value_stores = {}
-
-    @classmethod
-    def _get(cls, value_store_class: Type[ValueStore], cfg_def_dict=None, init_config: Dict[str, str] = None):
-        """Retrieve or initialize a value store instance.
-
-        Args:
-            value_store_class (Type[ValueStore]): The value store class to retrieve or initialize.
-            init_config (Dict[str, str], optional): The initialization configuration. Required if the instance is not yet initialized.
-
-        Returns:
-            ValueStore: The initialized value store instance.
-
-        Raises:
-            ValueError: If the class is invalid or initialization fails.
-        """
-        if value_store_class in cls.value_stores:
-            # this value store was already initialized
-            return cls.value_stores.get(value_store_class)
-        if not issubclass(value_store_class, ValueStore):
-            raise ValueError(f'Value store class {value_store_class} invalid.')
-        try:
-            new_value_store = value_store_class(cfg_def_dict, init_config)
-            cls.value_stores[value_store_class] = new_value_store
-            return new_value_store
-        except Exception as e:
-            raise ValueError(
-                f'Cannot initialize value store {value_store_class}! {e}')
-
-    @classmethod
-    def retrieve_val(cls, value_store_class: Type, config_id: str, cfg_defs: ConfigDefs, init_config: Dict[str, str] = None) -> Tuple[Any, Optional[str]]:
-        """Retrieves a value from a specific value store.
-
-        Args:
-            value_store_class (Type[ValueStore]): The class of the value store
-                (e.g., ValueStoreFile, ValueStoreEnv).
-            config_id (str): Identifier of the configuration item.
-            cfg_defs (ConfigDefs): Configuration definitions for lookup.
-            init_config (Optional[Dict[str, str]]): Optional initialization
-                configuration.
-
-        Returns:
-            tuple[Any, Optional[ConfigValueSource]]: Retrieved value and its
-            source type. Returns (None, None) if the store could not be used.
-        """
-        value_store = cls._get(value_store_class, cfg_defs, init_config)
-        return value_store.retrieve_value(config_id) if value_store else (None, None)
-
-    @classmethod
-    def save_val(cls, value_store_class: Type, config_id: str, value: Any) -> Tuple[Any, Optional[str]]:
-        """Saves a value to a specific value store.
-
-        Args:
-            value_store_class (Type[ValueStore]): The class of the value store.
-            config_id (str): Identifier of the configuration item.
-            value (Any): The value to store.
-
-        Returns:
-            tuple[Any, Optional[str]]: The result of the save operation, or (None, None)
-            if the store could not be used.
-        """
-        value_store = cls._get(value_store_class)
-        return value_store.save_value(config_id, value) if value_store else (None, None)
 
 
 def get_new_masterkey() -> str:
@@ -406,4 +315,4 @@ def get_new_masterkey() -> str:
     Returns:
         str: A newly generated master key.
     """
-    return ValueStores._get(ValueStoreSecure).prepare_new_masterkey()
+    return ValueStoreSecure().prepare_new_masterkey()

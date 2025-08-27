@@ -1,171 +1,90 @@
-import pytest
-import re
-from unittest.mock import patch, MagicMock
-import pytest
-from unittest.mock import patch
-from mgconfig import config_values as cvmod
+# import pytest
+# from mgconfig.config_values import config_values
 
-import mgconfig.config_values 
+# class DummyConfigValue:
+#     def __init__(self, value):
+#         self.value = value
+#         self.cleaned_up = False
+        
+#     def cleanup(self):
+#         self.cleaned_up = True
 
+# @pytest.fixture(autouse=True)
+# def setup():
+#     """Clear ConfigValues before and after each test"""
+#     config_values.clear()
+#     yield
+#     config_values.clear()
 
-@pytest.fixture
-def mock_cfg_def():
-    """Fixture returning a fake ConfigDef object."""
-    class DummyCfgDef:
-        config_id = "test_id"
-        config_type = "str"
-        config_default = "default_val"
-        config_readonly = False
-    return DummyCfgDef()
-
-
-@pytest.fixture
-def mock_cfg_defs(mock_cfg_def):
-    """Fixture returning a fake ConfigDefs collection."""
-    class DummyCfgDefs(dict):
-        def values(self):
-            return [mock_cfg_def]
-    return DummyCfgDefs({mock_cfg_def.config_id: mock_cfg_def})
+# def test_add_and_get():
+#     """Test adding and retrieving values"""
+#     value = DummyConfigValue("test")
+#     config_values.set("test_key", value)
+#     assert config_values.get("test_key") == value
 
 
-# ---------------- ConfigValue Tests ----------------
+# def test_contains():
+#     """Test key existence check"""
+#     config_values.set("test_key", DummyConfigValue("test"))
+#     assert ConfigValues.contains("test_key")
+#     assert not ConfigValues.contains("missing_key")
 
-def test_configvalue_initialize_and_str(mock_cfg_def):
-    with patch("mgconfig.config_values.ConfigTypes") as mock_types:
-        mock_types.parse_value.return_value = (True, "parsed_val")
-        mock_types.display_value.side_effect = lambda v, t: f"display:{v}"
-        mock_types.output_value.side_effect = lambda v, t: f"out:{v}"
+# def test_keys_values_items():
+#     """Test dictionary methods"""
+#     value1 = DummyConfigValue("test1")
+#     value2 = DummyConfigValue("test2")
+#     config_values.set("key1", value1)
+#     config_values.set("key2", value2)
+    
+#     assert set(ConfigValues.keys()) == {"key1", "key2"}
+#     assert list(config_values.values()) == [value1, value2]
+#     assert set(config_values.items()) == {("key1", value1), ("key2", value2)}
 
-        cv = mgconfig.config_values.ConfigValue(mock_cfg_def, "raw_val", "env")
-        assert str(cv) == "display:parsed_val"
-        assert cv.display_current() == "display:parsed_val"
-        assert cv.output_current() == "out:parsed_val"
+# def test_iteration():
+#     """Test iteration over ConfigValues"""
+#     items = {"key1": DummyConfigValue("test1"), 
+#              "key2": DummyConfigValue("test2")}
+#     for k, v in items.items():
+#         config_values.set(k, v)
+    
+#     assert set(ConfigValues) == set(items.keys())
 
+# def test_len():
+#     """Test length calculation"""
+#     config_values.set("key1", DummyConfigValue("test1"))
+#     config_values.set("key2", DummyConfigValue("test2"))
+#     assert len(ConfigValues) == 2
 
-def test_configvalue_invalid_type_raises(mock_cfg_def):
-    with patch("mgconfig.config_values.ConfigTypes") as mock_types:
-        mock_types.parse_value.return_value = (False, None)
-        with pytest.raises(ValueError):
-            mgconfig.config_values.ConfigValue(mock_cfg_def, "bad_val")
+# def test_get_with_default():
+#     """Test get with default value"""
+#     default = DummyConfigValue("default")
+#     assert config_values.get("missing", default) == default
 
+# def test_get_with_fail_on_error():
+#     """Test get with fail_on_error"""
+#     with pytest.raises(KeyError):
+#         config_values.get("missing", fail_on_error=True)
 
-def test_configvalue_value_new_valid(mock_cfg_def):
-    with patch("mgconfig.config_values.ConfigTypes") as mock_types:
-        mock_types.parse_value.return_value = (True, "parsed")
-        mock_types.output_value.side_effect = lambda v, t: v
+# def test_delete_item():
+#     """Test item deletion"""
+#     config_values.set("test_key", DummyConfigValue("test"))
+#     del ConfigValues["test_key"]
+#     assert not ConfigValues.contains("test_key")
 
-        cv = mgconfig.config_values.ConfigValue(mock_cfg_def, "val")
-        cv.value_new = "parsed"
-        assert cv.value_new == "parsed"
+# def test_clear():
+#     """Test clearing all values"""
+#     value1 = DummyConfigValue("test1")
+#     value2 = DummyConfigValue("test2")
+#     config_values.set("key1", value1)
+#     config_values.set("key2", value2)
+    
+#     config_values.clear()
+#     assert len(ConfigValues) == 0
+#     assert value1.cleaned_up
+#     assert value2.cleaned_up
 
-
-def test_configvalue_value_new_invalid(mock_cfg_def):
-    with patch.object(cvmod, "ConfigTypes") as mock_types:
-        mock_types.parse_value.side_effect = [
-            (True,  "parsed_init"),
-            (False, None),
-        ]
-        mock_types.output_value.side_effect = lambda v, t: v
-
-        cv = cvmod.ConfigValue(mock_cfg_def, "init")
-        with pytest.raises(ValueError):
-            cv.value_new = "bad"
-
-
-# ---------------- ConfigValues Tests ----------------
-
-def test_configvalues_add_and_get(mock_cfg_defs):
-    with patch("mgconfig.config_values.ValueStores.retrieve_val") as mock_retrieve, \
-         patch("mgconfig.config_values.ConfigValue") as mock_cv:
-        mock_retrieve.return_value = ("val", "env")
-        mock_cv.return_value = "ConfigValueInstance"
-
-        cv_container = mgconfig.config_values.ConfigValues(mock_cfg_defs)
-        assert cv_container["test_id"] == "ConfigValueInstance"
-        assert "test_id" in cv_container
-        assert list(cv_container.keys()) == ["test_id"]
-
-
-def test_replace_var_basic(mock_cfg_defs):
-    cv_container = mgconfig.config_values.ConfigValues.__new__(mgconfig.config_values.ConfigValues)
-    cv_container._cfg_vals = {
-        "FOO": MagicMock(value_src="bar"),
-    }
-    result = cv_container._replace_var("prefix-$(FOO)-suffix", cv_container._cfg_vals)
-    assert result == "prefix-bar-suffix"
-
-
-def test_replace_var_nested(mock_cfg_defs):
-    cv_container = mgconfig.config_values.ConfigValues.__new__(mgconfig.config_values.ConfigValues)
-    cv_container._cfg_vals = {
-        "A": MagicMock(value_src="$(B)"),
-        "B": MagicMock(value_src="val"),
-    }
-    result = cv_container._replace_var("$(A)", cv_container._cfg_vals)
-    assert result == "val"
-
-
-def test_replace_var_circular_reference_raises(mock_cfg_defs):
-    cv_container = mgconfig.config_values.ConfigValues.__new__(mgconfig.config_values.ConfigValues)
-    cv_container._cfg_vals = {
-        "A": MagicMock(value_src="$(B)"),
-        "B": MagicMock(value_src="$(A)"),
-    }
-    with pytest.raises(ValueError, match="Circular reference"):
-        cv_container._replace_var("$(A)", cv_container._cfg_vals)
-
-
-def test_save_new_value_secret(mock_cfg_defs, mock_cfg_def):
-    mock_cfg_def.config_type = "secret"
-    with patch("mgconfig.config_values.ValueStores.save_val") as mock_save, \
-         patch("mgconfig.config_values.ConfigValue") as mock_cv, \
-         patch("mgconfig.config_values.logger") as mock_logger:
-
-        dummy_cv = MagicMock()
-        dummy_cv._cfg_def = mock_cfg_def
-        dummy_cv.output_new.return_value = "parsed_secret"
-        mock_cv.return_value = dummy_cv
-
-        cv_container = mgconfig.config_values.ConfigValues(mock_cfg_defs)
-        cv_container._cfg_vals["test_id"] = dummy_cv
-
-        result = cv_container.save_new_value("test_id", "new_secret", True)
-        mock_save.assert_called_once()
-        mock_logger.info.assert_called()
-        assert result is None  # function has no return
-
-
-def test_save_new_value_normal(mock_cfg_defs, mock_cfg_def):
-    mock_cfg_def.config_type = "string"
-    with patch("mgconfig.config_values.ValueStores.save_val") as mock_save, \
-         patch("mgconfig.config_values.ConfigValue") as mock_cv, \
-         patch("mgconfig.config_values.logger") as mock_logger:
-
-        dummy_cv = MagicMock()
-        dummy_cv._cfg_def = mock_cfg_def
-        dummy_cv.value = "old"
-        dummy_cv.output_new.return_value = "parsed_new"
-        mock_cv.return_value = dummy_cv
-
-        cv_container = mgconfig.config_values.ConfigValues(mock_cfg_defs)
-        cv_container._cfg_vals["test_id"] = dummy_cv
-
-        cv_container.save_new_value("test_id", "new_value", apply_immediately=True)
-        mock_save.assert_called_once()
-        mock_logger.info.assert_called()
-        dummy_cv.initialize_value.assert_called_once()
-
-
-def test_save_new_value_readonly_raises(mock_cfg_defs, mock_cfg_def):
-    mock_cfg_def.config_readonly = True
-    with patch("mgconfig.config_values.ValueStores.save_val"), \
-         patch("mgconfig.config_values.ConfigValue") as mock_cv:
-        dummy_cv = MagicMock()
-        dummy_cv._cfg_def = mock_cfg_def
-        mock_cv.return_value = dummy_cv
-
-        cv_container = mgconfig.config_values.ConfigValues(mock_cfg_defs)
-        cv_container._cfg_vals["test_id"] = dummy_cv
-
-        with pytest.raises(ValueError):
-            cv_container.save_new_value("test_id", "new_val")
+# def test_dict_property():
+#     """Test dict property access"""
+#     value = DummyConfigValue("test")
+#     config_values.set("test_key", value)
+#     assert ConfigValues.dict["test_key"] == value

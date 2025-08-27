@@ -4,6 +4,7 @@
 from mgconfig.keystores import KeyStores
 from mgconfig.helpers import lazy_build_config_id, section_SEC
 from typing import Any, Dict
+from .config_values import config_values
 
 
 class Key:
@@ -77,7 +78,7 @@ ITEM_NAME_TAG = 'item_name'
 KEYSTORE_NAME_TAG = 'keystore'
 
 
-def get_from_conf(conf: Dict[str, str], key_name: str, value_name: str) -> str:
+def get_from_conf( key_name: str, value_name: str) -> str:
     """Retrieves a value from the configuration using a composite config ID.
 
     Args:
@@ -92,10 +93,10 @@ def get_from_conf(conf: Dict[str, str], key_name: str, value_name: str) -> str:
         ValueError: If the value cannot be found in the configuration.
     """
     config_id = lazy_build_config_id(section_SEC, key_name + "_" + value_name)
-    value = conf.get(config_id)
-    if value is None:
-        raise ValueError(f'Cannot find {config_id} for {key_name}')
-    return value
+    config_value = config_values.get(config_id)
+    if config_value is None:
+        raise ValueError(f'Cannot find {config_id} in configuration.')
+    return config_value.value
 
 
 class KeyProvider:
@@ -107,7 +108,7 @@ class KeyProvider:
     """
     VALID_KEYS = [MASTERKEYNAME]
 
-    def __init__(self, config: Dict[str, str]) -> None:
+    def __init__(self) -> None:
         """Initializes the KeyProvider by loading keys from configuration.
 
         Args:
@@ -119,11 +120,11 @@ class KeyProvider:
         self._keys = {}
 
         for key_name in self.VALID_KEYS:
-            keystore_name = get_from_conf(config, key_name, KEYSTORE_NAME_TAG)
+            keystore_name = get_from_conf(key_name, KEYSTORE_NAME_TAG)
             if not KeyStores.contains(keystore_name):
                 raise ValueError(f'Invalid keystore name {keystore_name}')
-            KeyStores.get(keystore_name).configure(config)
-            item_name = get_from_conf(config, key_name, ITEM_NAME_TAG)
+            KeyStores.get(keystore_name).configure()
+            item_name = get_from_conf(key_name, ITEM_NAME_TAG)
             self._keys[key_name] = Key(keystore_name, item_name)
 
     def get(self, name: str) -> str:

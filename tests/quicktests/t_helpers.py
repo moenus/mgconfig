@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: MIT
 
 import os
-from mgconfig.secure_store import SecureStore
 import shutil
 from pathlib import Path
 from mgconfig import Configuration, DefaultValues
@@ -31,14 +30,10 @@ def get_test_filepath(filename):
     return Path(test_basedir) / filename
 
 
-def set_app_header():
+def create_configuration():
     DefaultValues().clear()
     DefaultValues().add('app_name', 'testapp')
-
-
-def create_configuration():
-    set_app_header()
-    Configuration._instance = None 
+    Configuration.reset_instance()
     return Configuration(CONFIG_DEFINITIONS_YAML)
 
 

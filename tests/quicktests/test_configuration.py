@@ -3,12 +3,11 @@
 
 from datetime import time
 from pathlib import Path
-from tests.quicktests.t_helpers import prepare_clean_basedir, create_configuration, set_app_header, prepare_new_env_master_key
+from tests.quicktests.t_helpers import prepare_clean_basedir, create_configuration, prepare_new_env_master_key
+from mgconfig.config_values import config_values, config_values_new
 
 
 BASE_DIRECTORY_PATH = prepare_clean_basedir()
-
-set_app_header()
 
 test_values = {
     'app_name': 'testapp',
@@ -44,37 +43,40 @@ new_values_immediate_ext = {
 
 
 def test_configuration_reading():
+    prepare_clean_basedir()
     prepare_new_env_master_key()
     config = create_configuration()
 
     assert config.app_name == test_values['app_name']
 
     for key, value in test_values.items():
-        assert config.get(key) == value
+        assert config.get_value(key) == value
 
-    for config_value in config._config_values.values():
-        assert config_value.value_src == config_value.output_current()
+    for config_value in config_values.values():
+        if config_value.config_id in test_values:
+            assert config_value.value == test_values[config_value.config_id]
 
 
 def test_configuration_settings():
+    prepare_clean_basedir()
     prepare_new_env_master_key()
     config = create_configuration()
 
     for key, value in new_values.items():
         config.save_new_value(key, value)
-        assert config._config_values[key].value_new == value
+        assert config_values_new.get(key).value == value
 
     config = create_configuration()     # read in a second time with new values
 
     for key, value in new_values.items():
-        assert config._config_values[key].value == value
+        assert config_values.get(key).value == value
 
     for key, value in new_values_immediate.items():
         config.save_new_value(key, value, apply_immediately=True)
-        assert config._config_values[key].value_new == None
-        assert config._config_values[key].value == value
+        assert config_values_new.get(key) == None
+        assert config_values.get(key).value == value
         assert config.__dict__[key] == value
 
     config = create_configuration()      # read in the saved configuration
     for key, value in new_values_immediate.items():
-        assert config.get(key) == value
+        assert config.get_value(key) == value

@@ -2,12 +2,13 @@
 # SPDX-License-Identifier: MIT
 
 from mgconfig.config_defs import ConfigDefs
-from tests.quicktests.t_helpers import CONFIG_DEFINITIONS_YAML, set_app_header, DefaultValues
+from tests.quicktests.t_helpers import CONFIG_DEFINITIONS_YAML, DefaultValues
 
 default_function_values = {}
 
 def test_create_config_defs():
-    set_app_header()
+    DefaultValues().clear()
+    DefaultValues().add('app_name', 'testapp')
 
     default_values = DefaultValues().dict
 

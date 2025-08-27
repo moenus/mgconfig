@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: MIT
 
 from mgconfig.key_provider import KeyProvider
-from mgconfig.secure_store import SecureStore
 from pathlib import Path
 import json
 from mgconfig.helpers import lazy_build_config_id, section_SEC
@@ -10,6 +9,14 @@ from mgconfig.secure_store_helpers import generate_key_str
 from tests.quicktests.t_helpers import get_test_filepath, prepare_clean_basedir
 import keyring
 import os
+
+
+from mgconfig.config_values import config_values, ConfigValue
+
+
+config_values.set( "sec_master_key_keystore", ConfigValue(None,'env','source'))
+config_values.set( "sec_master_key_item_name", ConfigValue(None,'APP_KEY','source'))
+
 
 KEYFILE = get_test_filepath("secure_keyfile.json")
 SERVICE_NAME = 'mgconfig_test'
@@ -36,6 +43,7 @@ def set_config(key_name, keystore_name, item_name):
     ] = SERVICE_NAME
 
 
+
 def prepare_keyfile():
     keydata = {'salt': 'abc', 'APP_KEY': 'xyz'}
     path = Path(KEYFILE).parent
@@ -49,7 +57,7 @@ def test_key_provider_module():
 
     prepare_keyfile()
 
-    provider = KeyProvider(config)
+    provider = KeyProvider()
 
     master_key = provider.get('master_key')
 

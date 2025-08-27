@@ -147,6 +147,9 @@ class ConfigDef():
                 raise ValueError(
                     f"{self.config_id}: {field_name} must be a non-empty string.")
 
+    def __str__(self):
+        return self.config_id
+
     def get_property(self, property_name: str) -> Any:
         """Retrieve a property value by its attribute name.
 
@@ -227,8 +230,14 @@ class ConfigDefs:
     Attributes:
         cfg_defs (dict[str, ConfigDef]): Dictionary mapping config_id to ConfigDef.
     """
+    _instance = None
 
-    def __init__(self, cfg_defs_filepaths: Union[str, list[str]]) -> None:
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self, cfg_defs_filepaths: Union[str, list[str]] = None) -> None:
         """Load configuration definitions from YAML files.
 
         Args:
@@ -238,17 +247,19 @@ class ConfigDefs:
         Raises:
             ValueError: If YAML format is invalid or definitions are duplicated.
         """
-        self.cfg_defs = {}
+        if not hasattr(self, "_initialized"):  # avoid re-initializing
+            self.cfg_defs = {}
 
-        if isinstance(cfg_defs_filepaths, (str, Path)):
-            cfg_defs_filepaths = [cfg_defs_filepaths]
-        for path in map(Path, cfg_defs_filepaths):
-            with path.open("r", encoding="utf-8") as f:
-                cfg_def_data = yaml.safe_load(f)
-            if not isinstance(cfg_def_data, list):
-                raise ValueError(
-                    f"Invalid config format in {path}, expected a list.")
-            self._parse_config_defs_data(cfg_def_data, self.cfg_defs)
+            if isinstance(cfg_defs_filepaths, (str, Path)):
+                cfg_defs_filepaths = [cfg_defs_filepaths]
+            for path in map(Path, cfg_defs_filepaths):
+                with path.open("r", encoding="utf-8") as f:
+                    cfg_def_data = yaml.safe_load(f)
+                if not isinstance(cfg_def_data, list):
+                    raise ValueError(
+                        f"Invalid config format in {path}, expected a list.")
+                self._parse_config_defs_data(cfg_def_data, self.cfg_defs)
+            self._initialized = True
 
     def _parse_config_defs_data(self, config_defs_data: list, config_def_dict: dict) -> list:
         """Parse raw config definitions from YAML into ConfigDef instances.
@@ -321,7 +332,7 @@ class ConfigDefs:
 
         Raises:
             ValueError: If a mandatory field is missing.
-        """        
+        """
         src_name = cdf.src_name
         if mandatory and src_name not in source:
             raise ValueError(
@@ -346,7 +357,7 @@ class ConfigDefs:
         Args:
             key (str): The config_id.
             value (ConfigDef): The configuration definition to store.
-        """        
+        """
         self.cfg_defs[key] = value
 
     def __delitem__(self, key: str) -> None:
@@ -354,7 +365,7 @@ class ConfigDefs:
 
         Args:
             key (str): The config_id to delete.
-        """        
+        """
         del self.cfg_defs[key]
 
     def __contains__(self, key: str) -> bool:
@@ -365,7 +376,7 @@ class ConfigDefs:
 
         Returns:
             bool: True if present, False otherwise.
-        """        
+        """
         return key in self.cfg_defs
 
     def keys(self) -> list:
@@ -373,7 +384,7 @@ class ConfigDefs:
 
         Returns:
             list: A list-like view of all config_ids.
-        """        
+        """
         return self.cfg_defs.keys()
 
     def values(self) -> list:
@@ -381,7 +392,7 @@ class ConfigDefs:
 
         Returns:
             list: A list-like view of all ConfigDef values.
-        """        
+        """
         return self.cfg_defs.values()
 
     def items(self) -> dict:
@@ -389,15 +400,15 @@ class ConfigDefs:
 
         Returns:
             dict: A dictionary-like view of config_id to ConfigDef mappings.
-        """        
+        """
         return self.cfg_defs.items()
 
-    def __iter__(self)-> Iterator:
+    def __iter__(self) -> Iterator:
         """Iterate over config_ids in the collection.
 
         Returns:
             Iterator: An iterator over config_ids.
-        """        
+        """
         return iter(self.cfg_defs)
 
     def __len__(self) -> int:
@@ -405,7 +416,7 @@ class ConfigDefs:
 
         Returns:
             int: The number of entries in the collection.
-        """        
+        """
         return len(self.cfg_defs)
 
     def get(self, key: str, default=None) -> ConfigDef:
@@ -417,5 +428,34 @@ class ConfigDefs:
 
         Returns:
             ConfigDef | Any: The ConfigDef instance or the provided default.
-        """        
+        """
         return self.cfg_defs.get(key, default)
+
+    @classmethod
+    def cfg_def_property(cls, item_id: str, property_name: str) -> Optional[str]:
+        """Retrieves a configuration definition property for an item.
+
+        Args:
+            item_id (str): Identifier of the configuration item.
+            property_name (str): The property name in the configuration definition.
+
+        Returns:
+            Optional[str]: The configuration definition property value, or None
+            if not found.
+        """
+        if cls._instance is None:
+            raise ValueError(f'ConfigDefs is not initialized.')      
+        if item_id not in cls._instance:
+            raise ValueError(f'{item_id} not found in ConfigDefs.')      
+        cfg_def = cls._instance.get(item_id)
+        if cfg_def is None:
+            return None
+        return cfg_def.get_property(property_name)
+
+    @classmethod
+    def reset(cls):
+        """Delete the current singleton instance."""
+        if cls._instance:
+            # Clear the internal dictionary
+            cls._instance.cfg_defs.clear()
+        cls._instance = None   

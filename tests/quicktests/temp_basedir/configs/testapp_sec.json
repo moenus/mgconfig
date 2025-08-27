@@ -1,0 +1,1 @@
+{"_header":{"version":1,"kdf":"HKDF-SHA256","salt_b64":"0VbR4khZyHi0IsAsIygMJEoxX+KpZxZBDrCLRYdkqC0=","created_at":1756304923,"mk_hash":"iz2C80pIMQyS+xS29G2PFCCQXb4fASzPEEVVX1N64Ck=","items_mac_b64":"fHXIHmE0M6FYoV9pDbeXhZE9IB+N8sO20XXEbg1utOI=","items_mac_alg":"HMAC-SHA256"},"items":{"tst_secret":{"n":"heckBSiQ4/UxdJxD","ct":"rFfrrNpTgzyYQQDk3ssxItBIdhna5PLrRS4="}}}
