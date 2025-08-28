@@ -1,7 +1,7 @@
 # Copyright (c) 2025 moenus
 # SPDX-License-Identifier: MIT
 
-from mgconfig import Configuration, DefaultValues, PostProcessing, DefaultFunctions, ConfigTypes, configuration_logger
+from mgconfig import Configuration, DefaultValues, PostProcessing, DefaultFunctions, ConfigTypes, config_logger
 from ext_default_functions import default_hostname, default_timezone
 from ext_postprocessing import extend_timezone_configuration, LOCAL_TZ_ID
 from ext_config_types import parse_filename
@@ -17,36 +17,36 @@ CONFIG_DEFINITIONS_YAML = [
 # # ---------------------------------------------------------------------
 # # configuration types extensions - example
 # # ---------------------------------------------------------------------
-# ConfigTypes.add_type('minutes', int,
-#                      ConfigTypes._parse_int_positive, str, None)
-# ConfigTypes.add_type('seconds', int,
-#                      ConfigTypes._parse_int_positive, str, None)
-# ConfigTypes.add_type('filename', str, parse_filename, None, None)
+ConfigTypes.add_type('minutes', int,
+                     ConfigTypes._parse_int_positive, str, None)
+ConfigTypes.add_type('seconds', int,
+                     ConfigTypes._parse_int_positive, str, None)
+ConfigTypes.add_type('filename', str, parse_filename, None, None)
 
 
 # ---------------------------------------------------------------------
 # application logger example
 # ---------------------------------------------------------------------
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 app_logger = logging.getLogger("example_usage")
-configuration_logger.replace_logger(app_logger)
+config_logger.replace_logger(app_logger)
 
 # # ---------------------------------------------------------------------
 # # default values - example
 # # ---------------------------------------------------------------------
-# DefaultValues().clear()
-# DefaultValues().add('app_title', 'Application Title')
+DefaultValues().clear()
+DefaultValues().add('app_name', 'Application_Name')
 
 # # ---------------------------------------------------------------------
 # # default functions - example
 # # ---------------------------------------------------------------------
-# DefaultFunctions().add('hostname', default_hostname)
-# DefaultFunctions().add('timezone', default_timezone)
+DefaultFunctions().add('hostname', default_hostname)
+DefaultFunctions().add('timezone', default_timezone)
 
 # # ---------------------------------------------------------------------
 # # post-processing - example
 # # ---------------------------------------------------------------------
-# PostProcessing().add(extend_timezone_configuration)
+PostProcessing().add(extend_timezone_configuration)
 
 # ---------------------------------------------------------------------
 # configuration item value creation

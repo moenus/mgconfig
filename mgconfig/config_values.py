@@ -49,11 +49,10 @@ class ConfigValue():
     def cfg_def(self):
         return self._cfg_def
 
+
 class ConfigValues(dict):
 
     """
-    ConfigValues
-
     Acts as a collection (dict-like) of ConfigValue.
 
     """
@@ -75,14 +74,3 @@ class ConfigValues(dict):
 config_values = ConfigValues()
 config_values_new = ConfigValues()
 
-# cfg_def = 'abc'
-
-# item1 = ConfigValue2(cfg_def, 123, 'mond')
-# item2 = ConfigValue2(cfg_def, 456, 'sonne')
-# config_values.set('abc', item1)
-# config_values.set('def', item2)
-
-# print(config_values.get('abc').value)
-# print(len(config_values))
-# config_values.clear()
-# print(len(config_values))

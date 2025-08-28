@@ -24,14 +24,14 @@
   prefix: host
   configs:
 
-  - name: hostname
-    type: str
-    env: APP_HOSTNAME
-    default_function: hostname
-    description: hostname, which is used to identify the instance of the app
-
   - name: timezone
     type: str
     env: TZ
     default_function: timezone
     description: timezone, which is used for timestamps and file datetimes
+
+  - name: hostname
+    type: str
+    env: APP_HOSTNAME
+    default_function: hostname
+    description: hostname, which is used to identify the instance of the app

@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hmac as _hmac, hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from pathlib import Path
-from mgconfig.helpers import logger
+from mgconfig.helpers import config_logger
 from mgconfig.key_provider import KeyProvider
 from cryptography.exceptions import InvalidTag
 from dataclasses import dataclass, fields
@@ -134,7 +134,7 @@ class SecureStore:
             with open(self.securestore_file, "r", encoding="utf-8") as f:
                 obj = json.load(f)
         except (json.JSONDecodeError, OSError) as e:
-            logger.error(f"Failed to load secure store: {e}")
+            config_logger.error(f"Failed to load secure store: {e}")
             raise
 
         h = obj.get("_header", {})
@@ -321,10 +321,10 @@ class SecureStore:
             pt = AESGCM(key).decrypt(nonce, ct, self._aad(name))
             return pt.decode("utf-8")
         except InvalidTag as e:
-            logger.error(f"Decryption failed for {name}: {e}")
+            config_logger.error(f"Decryption failed for {name}: {e}")
             return None
         except Exception as e:
-            logger.error("Unexpected decryption error")
+            config_logger.error("Unexpected decryption error")
             return None
 
     def delete_secret(self, name: str) -> bool:
@@ -377,7 +377,7 @@ class SecureStore:
         Returns:
             str: New master key (Base64 encoded).
         """
-        logger.info(f'Prepare auto_key_exchange ...')
+        config_logger.info(f'Prepare auto_key_exchange ...')
 
         current_mk_str = self.master_key_str
         new_master_key_str = generate_key_str()
@@ -387,7 +387,7 @@ class SecureStore:
 
         self.master_key_str = current_mk_str
         self._ssf_save(force=True)
-        logger.info(f'... auto_key_exchange prepared.')
+        config_logger.info(f'... auto_key_exchange prepared.')
         return new_master_key_str
 
     def _auto_key_exchange(self, new_master_key_str: str) -> bool:
@@ -399,7 +399,7 @@ class SecureStore:
         Returns:
             bool: True on success, False otherwise.
         """
-        logger.info('Exchange master key ...')
+        config_logger.info('Exchange master key ...')
         self.delete_secret(AUTO_EXCHANGE_OLD_MASTER_KEY)
         unencrypted_values = self.retrieve_all_secrets()
 
@@ -407,7 +407,7 @@ class SecureStore:
         self._header.mk_hash = self.master_key_hash
         self.store_all_secrets(unencrypted_values)
         self._ssf_save(force=True)
-        logger.info('Master key successfully exchanged.')
+        config_logger.info('Master key successfully exchanged.')
         return True
 
 # --------------------------------------------------------------------------------
@@ -422,7 +422,7 @@ class SecureStore:
             unencrypted_values (dict[str, str]): Mapping of names to plaintext values.
         """
 
-        logger.debug('store all secrets')
+        config_logger.debug('store all secrets')
         for key in unencrypted_values:
             self.store_secret(key, str(unencrypted_values[key]))
 
@@ -432,7 +432,7 @@ class SecureStore:
         Returns:
             dict: Mapping of entry names to plaintext values.
         """
-        logger.debug('retrieve all secrets')
+        config_logger.debug('retrieve all secrets')
         unencrypted = {}
         for key in self._items:
             value = self.retrieve_secret(key)

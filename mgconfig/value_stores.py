@@ -3,14 +3,14 @@
 
 import os
 import yaml
-from .helpers import logger, config_securestorefile, config_configfile, SingletonMeta
+from .helpers import config_logger, config_securestorefile, config_configfile, SingletonMeta
 from .secure_store import SecureStore
 from .key_provider import KeyProvider
 from .config_defs import CDF, ConfigDefs
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from enum import Enum
 from pathlib import Path
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from .config_values import config_values
 
 
@@ -21,6 +21,9 @@ class ConfigValueSource(str, Enum):
     ENV_VAR = 'env_var'
     DEFAULT = 'default'
     ENCRYPT = 'encrypt'
+
+    def __str__(self) -> str:
+        return self.value    
 
 
 class ValueStore (metaclass= SingletonMeta):
@@ -86,12 +89,12 @@ class ValueStoreSecure(ValueStore):
         try:
             secure_store = self._get_new_secure_store()
             if not secure_store.validate_master_key():
-                logger.info(
+                config_logger.info(
                     'Master key invalid or secure store corrupted.')
             else:
-                logger.info('Secure store was successfully initialized.')
+                config_logger.info('Secure store was successfully initialized.')
         except Exception as e:
-            logger.error(f'Cannot initialize secure store: {e}')
+            config_logger.error(f'Cannot initialize secure store: {e}')
 
     def _get_new_secure_store(self) -> SecureStore:
         """Creates a new `SecureStore` instance.
@@ -118,10 +121,10 @@ class ValueStoreSecure(ValueStore):
             secure_store = self._get_new_secure_store()
             secure_store.store_secret(item_id, value)
             secure_store._ssf_save()
-            logger.info(f'Secret {item_id} saved to keystore.')
+            config_logger.info(f'Secret {item_id} saved to keystore.')
             return True
         except Exception as e:
-            logger.error(f'Cannot store secret value for id {item_id}: {e}')
+            config_logger.error(f'Cannot store secret value for id {item_id}: {e}')
         return False
 
     def retrieve_value(self, item_id: str) -> tuple[Any, ConfigValueSource]:
@@ -138,7 +141,7 @@ class ValueStoreSecure(ValueStore):
             secure_store = self._get_new_secure_store()
             return secure_store.retrieve_secret(item_id), self._source
         except Exception as e:
-            logger.error(f'Cannot retrieve secret value for id {item_id}: {e}')
+            config_logger.error(f'Cannot retrieve secret value for id {item_id}: {e}')
             return None, self._source
 
     def prepare_new_masterkey(self) -> str:
@@ -151,9 +154,9 @@ class ValueStoreSecure(ValueStore):
             secure_store = self._get_new_secure_store()
             new_masterkey_str = secure_store.prepare_auto_key_exchange()
         except Exception as e:
-            logger.error(f'Cannot prepare new master key: {e}')
+            config_logger.error(f'Cannot prepare new master key: {e}')
             return None
-        logger.info('New master key generated. Auto-key-exchange prepared.')
+        config_logger.info('New master key generated. Auto-key-exchange prepared.')
         return new_masterkey_str
 
 
@@ -176,12 +179,12 @@ class ValueStoreFile(ValueStore):
                 Returns an empty dict if the file does not exist or is empty.
         """
         if os.path.exists(self.config_file):
-            logger.info(f'Reading config from file "{self.config_file}"')
+            config_logger.info(f'Reading config from file "{self.config_file}"')
             with open(self.config_file, "r") as file:
                 # Use safe_load to prevent code execution
                 return yaml.safe_load(file)
         else:
-            logger.info(f'No config file "{self.config_file}" found.')
+            config_logger.info(f'No config file "{self.config_file}" found.')
             return {}
 
     def retrieve_value(self, item_id: str) -> tuple[Any, ConfigValueSource]:
@@ -227,7 +230,7 @@ class ValueStoreFile(ValueStore):
         try:
             config_path.parent.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            logger.error(
+            config_logger.error(
                 f"Directory '{config_path}' could not be prepared: {e}.")
             return False
         try:
@@ -236,7 +239,7 @@ class ValueStoreFile(ValueStore):
                           default_flow_style=False)
             return True
         except Exception as e:
-            logger.error(
+            config_logger.error(
                 f"File '{self.config_file}' could not be written: {e}.")
             return False
 

@@ -1,6 +1,7 @@
 # Copyright (c) 2025 moenus
 # SPDX-License-Identifier: MIT
 
+import threading
 import logging
 from typing import Union, Any
 from enum import Enum
@@ -109,9 +110,6 @@ config_securestorefile = ConstConfig('securestore_file', section_SEC)
 config_keyfile = ConstConfig('keyfile_filepath', section_SEC)
 config_service_name = ConstConfig('keyring_service_name', section_SEC)
 
-# test = ConstConfig('keyring_service_name')
-# print(ConstConfig.list_config_handles())
-
 
 def lazy_build_config_id(section_obj: ConstSection, config_name: str):
     return f'{section_obj.section_prefix}_{config_name}'
@@ -156,11 +154,8 @@ class LoggerWrapper:
         return getattr(self._logger, name)
 
 
-logger = LoggerWrapper()
+config_logger = LoggerWrapper()
 
-
-
-import threading
 
 class SingletonMeta(type):
     _instances = {}
@@ -171,10 +166,10 @@ class SingletonMeta(type):
         if lock is None:
             lock = threading.RLock()
             setattr(cls, "_lock", lock)
-            
+
         if cls in SingletonMeta._instances:
             return SingletonMeta._instances[cls]
-      
+
         with lock:
             # double-check inside lock
             if cls in SingletonMeta._instances:

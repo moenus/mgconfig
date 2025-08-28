@@ -5,7 +5,7 @@ import keyring
 import os
 import json
 from pathlib import Path
-from .helpers import config_keyfile, config_service_name, ConstConfig, logger
+from .helpers import config_keyfile, config_service_name, ConstConfig, config_logger
 from typing import Any, Dict, Optional
 from .config_values import config_values
 
@@ -186,7 +186,7 @@ class KeyStoreFile(KeyStore):
                 json.dump(self.filedata, f)
             return True
         except Exception as e:
-            logger.error(f'Cannot write to file {self.filepath}: {e}')
+            config_logger.error(f'Cannot write to file {self.filepath}: {e}')
             return False
 
 

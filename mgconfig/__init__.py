@@ -28,17 +28,15 @@
 # SOFTWARE.
 # -----------------------------------------------------------------------------
 
-from .helpers import logger, ConstSection, ConstConfig, Section
+from .helpers import config_logger, ConstSection, ConstConfig, Section
 from .extension_system import DefaultValues, DefaultFunctions, PostProcessing
 from .configuration import Configuration
 from .config_types import ConfigTypes
 from .value_stores import get_new_masterkey
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 
-configuration_logger = logger 
-
-# TODO: Can configuration values be None?
+# configuration_logger = config_logger 
 
 # the predefined classes for section handles and predefined objects for resolving an config id at runtime
 # are used in mgconfig code to find the configuration for configuration value stores. They will be resolved

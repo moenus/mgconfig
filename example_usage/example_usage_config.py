@@ -5,11 +5,12 @@ from datetime import time
 from pathlib import Path
 
 import os
-from mgconfig.secure_store import SecureStore
 import shutil
 from mgconfig import Configuration, DefaultValues
+from mgconfig.config_defs import ConfigDefs
+from mgconfig.config_types import ConfigTypes
 from mgconfig.secure_store_helpers import generate_key_str
-from mgconfig.config_values import config_values
+from mgconfig.config_values import config_values, config_values_new
 
 
 CONFIG_DEFINITIONS_YAML = [
@@ -20,8 +21,6 @@ CONFIG_DEFINITIONS_YAML = [
 root_dir = os.path.dirname(os.path.abspath(__file__))
 test_basedir = Path(root_dir) / 'temp_basedir'
 
-def prepare_new_env_master_key():
-    os.environ["APP_KEY"] = generate_key_str()
 
 def prepare_clean_basedir():
     os.environ["DATA_DIRECTORY"] = test_basedir.as_posix()
@@ -30,28 +29,15 @@ def prepare_clean_basedir():
     return test_basedir
 
 
-def get_test_filepath(filename):
-    return Path(test_basedir) / filename
-
-
-def set_app_header():
+def create_configuration():
     DefaultValues().clear()
     DefaultValues().add('app_name', 'testapp')
-
-
-def create_configuration():
-    set_app_header()
-    Configuration._instance = None 
+    Configuration.reset_instance()
     return Configuration(CONFIG_DEFINITIONS_YAML)
 
 
-def remove_file(filepath):
-    if os.path.exists(filepath):
-        os.remove(filepath)
-
 BASE_DIRECTORY_PATH = prepare_clean_basedir()
 
-set_app_header()
 
 test_values = {
     'app_name': 'testapp',
@@ -69,7 +55,6 @@ new_values = {
     'tst_bool': False,
     'tst_time': time(9, 11, 25),
     'tst_path': Path(r'\dir\b.txt'),
-    # 'tst_secret': 'newpw'
 }
 
 new_values_immediate = {
@@ -78,7 +63,6 @@ new_values_immediate = {
     'tst_bool': True,
     'tst_time': time(13, 11, 25),
     'tst_path': Path(r'\dir\c.txt'),
-    # 'tst_secret': 'geheim'
 }
 
 new_values_immediate_ext = {
@@ -86,8 +70,7 @@ new_values_immediate_ext = {
 }
 
 
-def test_configuration_reading():
-    prepare_new_env_master_key()
+def configuration_reading():
     config = create_configuration()
 
     assert config.app_name == test_values['app_name']
@@ -96,16 +79,16 @@ def test_configuration_reading():
         assert config.get_value(key) == value
 
     for config_value in config_values.values():
-        assert config_value.value_src == config_value.output_current()
+        if config_value.config_id in test_values:
+            assert config_value.value == test_values[config_value.config_id]
 
 
-def test_configuration_settings():
-    prepare_new_env_master_key()
+def configuration_changes():
     config = create_configuration()
 
     for key, value in new_values.items():
         config.save_new_value(key, value)
-        assert config_values.get(key).value_new == value
+        assert config_values_new.get(key).value == value
 
     config = create_configuration()     # read in a second time with new values
 
@@ -114,7 +97,7 @@ def test_configuration_settings():
 
     for key, value in new_values_immediate.items():
         config.save_new_value(key, value, apply_immediately=True)
-        assert config_values.get(key).value_new == None
+        assert config_values_new.get(key) == None
         assert config_values.get(key).value == value
         assert config.__dict__[key] == value
 
@@ -135,23 +118,25 @@ def configuration_values_print():
         print(str(row))
 
     print('------------------------------------')
-    for config_def in config._cfg_def_dict.values():
+    for config_def in ConfigDefs().values():
         id = config_def.config_id
         val_main = prep(config.__dict__.get(id))
         val_obj = config_values.get(id)
         val_type = config_def.config_type
         if val_obj:
-            val_src = prep(val_obj.value_src)
-            val_out = prep(val_obj.output_current())
-            val_str = prep(val_obj.display_current())
+            # val_src = prep(val_obj.value_src)
+            val_out = prep(ConfigTypes.output_value(val_obj.value, config_def.config_type))
+            # val_out = prep(val_obj.output_current())
+            val_str = prep(str(val_obj))
         else:
             val_src = val_out = val_str = ''
-        print(f'{(f'{id}: {val_type}').ljust(25)} {
-              val_main} {val_src} {val_out} {val_str}')
+        print(f'{(f'{id}: {val_type}').ljust(30)} {
+              val_main} {val_out} {val_str}')
 
 
 if __name__ == '__main__':
-    test_configuration_reading()
-    test_configuration_settings()
+    os.environ["APP_KEY"] = generate_key_str()
+    configuration_reading()
+    configuration_changes()
     configuration_values_print()
     print('finished successfully')

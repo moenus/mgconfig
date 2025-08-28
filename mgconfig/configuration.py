@@ -37,7 +37,8 @@ class Configuration(metaclass=SingletonMeta):
         self.extended = SimpleNamespace()
 
         for config_id, config_value in config_values.items():
-            self._set_property(config_id, config_value.value)
+             setattr(self, config_id, config_value.value)
+        del config_value  #optimization to drop the object before function exit.
 
         # call provided post processing functions
         for pp_func in PostProcessing().dict.values():
@@ -45,6 +46,7 @@ class Configuration(metaclass=SingletonMeta):
                 pp_func(self)
             except:
                 pass    
+        return
 
     def get_value(self, config_id: str, fail_on_error: bool = False) -> Any:
         """Retrieve the current value of a configuration item.
@@ -201,7 +203,7 @@ class Configuration(metaclass=SingletonMeta):
             config_def.config_name,
             config_def.config_env or '',
             config_def.config_default or '',
-            source,
+            str(source),
             value_str,
             config_def.config_type,
             config_def.config_id,

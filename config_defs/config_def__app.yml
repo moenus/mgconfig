@@ -81,5 +81,5 @@
     type: path
     readonly: True
     env: KEYFILE_PATH
-    default: $(app_name)
+    default: $(app_basedir)/configs
     description:
