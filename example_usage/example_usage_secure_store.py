@@ -87,8 +87,6 @@ def test_secure_store_module_wrong_master():
 
 def test_secure_store_key_exchange():
 
-    
-
     provider = DummyProvider()
     assert run_cycle(provider, provider) == True
     provider2 = DummyProvider()

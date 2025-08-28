@@ -5,9 +5,35 @@ from mgconfig.secure_store import SecureStore
 from mgconfig.secure_store_helpers import generate_key_str
 import os
 from pathlib import Path 
+import pytest
+import shutil
 
 TEST_ITEM_TEXT = 'this is a password test'
 TEST_ITEM_NAME = 'test_password'
+
+@pytest.fixture(autouse=True)
+def setup_test_directory():
+    """Create and cleanup test directory with proper permissions."""
+    # Setup
+    test_dir = Path(os.path.dirname(os.path.abspath(__file__))) / 'temp_basedir'
+    if test_dir.exists():
+        shutil.rmtree(test_dir)
+    test_dir.mkdir(parents=True, exist_ok=True)
+    
+    yield  # Run test
+    
+    # Cleanup
+    try:
+        shutil.rmtree(test_dir)
+    except PermissionError:
+        pass
+
+def remove_file(filepath):
+    try:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+    except PermissionError:
+        pass
 
 
 KEYSTORE_FILE = Path(os.path.dirname(os.path.abspath(__file__))) / 'temp_basedir' / "keystore_test.json"
