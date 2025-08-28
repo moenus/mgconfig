@@ -23,6 +23,7 @@ from .extension_system import DefaultFunctions, DefaultValues
 import keyword
 from pathlib import Path
 from enum import Enum
+from .helpers import SingletonMeta
 
 CONFIG_PREFIX = 'config'
 
@@ -212,7 +213,7 @@ class DefDict:
         self.dict[str(cdf)] = value
 
 
-class ConfigDefs:
+class ConfigDefs(metaclass=SingletonMeta):
     """Collection of configuration definitions.
 
     Config definitions are loaded from one or more YAML files and stored 
@@ -230,12 +231,6 @@ class ConfigDefs:
     Attributes:
         cfg_defs (dict[str, ConfigDef]): Dictionary mapping config_id to ConfigDef.
     """
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
 
     def __init__(self, cfg_defs_filepaths: Union[str, list[str]] = None) -> None:
         """Load configuration definitions from YAML files.
@@ -247,19 +242,21 @@ class ConfigDefs:
         Raises:
             ValueError: If YAML format is invalid or definitions are duplicated.
         """
-        if not hasattr(self, "_initialized"):  # avoid re-initializing
-            self.cfg_defs = {}
+        if hasattr(self, "_initialized"):  # avoid re-initializing
+            return
 
-            if isinstance(cfg_defs_filepaths, (str, Path)):
-                cfg_defs_filepaths = [cfg_defs_filepaths]
-            for path in map(Path, cfg_defs_filepaths):
-                with path.open("r", encoding="utf-8") as f:
-                    cfg_def_data = yaml.safe_load(f)
-                if not isinstance(cfg_def_data, list):
-                    raise ValueError(
-                        f"Invalid config format in {path}, expected a list.")
-                self._parse_config_defs_data(cfg_def_data, self.cfg_defs)
-            self._initialized = True
+        self.cfg_defs = {}
+
+        if isinstance(cfg_defs_filepaths, (str, Path)):
+            cfg_defs_filepaths = [cfg_defs_filepaths]
+        for path in map(Path, cfg_defs_filepaths):
+            with path.open("r", encoding="utf-8") as f:
+                cfg_def_data = yaml.safe_load(f)
+            if not isinstance(cfg_def_data, list):
+                raise ValueError(
+                    f"Invalid config format in {path}, expected a list.")
+            self._parse_config_defs_data(cfg_def_data, self.cfg_defs)
+        self._initialized = True
 
     def _parse_config_defs_data(self, config_defs_data: list, config_def_dict: dict) -> list:
         """Parse raw config definitions from YAML into ConfigDef instances.
@@ -431,8 +428,8 @@ class ConfigDefs:
         """
         return self.cfg_defs.get(key, default)
 
-    @classmethod
-    def cfg_def_property(cls, item_id: str, property_name: str) -> Optional[str]:
+
+    def cfg_def_property(self, item_id: str, property_name: str) -> Optional[str]:
         """Retrieves a configuration definition property for an item.
 
         Args:
@@ -443,19 +440,14 @@ class ConfigDefs:
             Optional[str]: The configuration definition property value, or None
             if not found.
         """
-        if cls._instance is None:
-            raise ValueError(f'ConfigDefs is not initialized.')      
-        if item_id not in cls._instance:
-            raise ValueError(f'{item_id} not found in ConfigDefs.')      
-        cfg_def = cls._instance.get(item_id)
+
+        if item_id not in self:
+            raise ValueError(f'{item_id} not found in ConfigDefs.')
+        cfg_def = self.get(item_id)
         if cfg_def is None:
             return None
         return cfg_def.get_property(property_name)
 
     @classmethod
     def reset(cls):
-        """Delete the current singleton instance."""
-        if cls._instance:
-            # Clear the internal dictionary
-            cls._instance.cfg_defs.clear()
-        cls._instance = None   
+        cls.reset_instance()

@@ -12,7 +12,7 @@ TEST_ITEM_NAME = 'test_password'
 
 KEYSTORE_FILE = Path(os.path.dirname(os.path.abspath(__file__))) / 'temp_basedir' / "keystore_test.json"
 
-os.environ["APP_KEY"] = generate_key_str()
+# os.environ["APP_KEY"] = generate_key_str()
 
 def remove_file(filepath):
     if os.path.exists(filepath):
@@ -105,8 +105,3 @@ def test_secure_store_key_exchange():
     assert run_cycle(provider2, provider2) == True
     assert run_cycle(provider2, provider) == False
 
-
-if __name__ == '__main__':
-    print(generate_key_str())
-    # test_secure_store_key_exchange()
-    print('Finished.')

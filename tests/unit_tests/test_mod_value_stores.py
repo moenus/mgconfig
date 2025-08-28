@@ -14,15 +14,15 @@ from  mgconfig import value_stores
 @pytest.fixture(autouse=True)
 def reset_singletons():
     # Reset ValueStore singleton instances between tests
-    value_stores.ValueStoreSecure._instance = None
-    value_stores.ValueStoreFile._instance = None
-    value_stores.ValueStoreEnv._instance = None
-    value_stores.ValueStoreDefault._instance = None
+    value_stores.ValueStoreSecure.reset_instance()
+    value_stores.ValueStoreFile.reset_instance()
+    value_stores.ValueStoreEnv.reset_instance()
+    value_stores.ValueStoreDefault.reset_instance()
     yield
-    value_stores.ValueStoreSecure._instance = None
-    value_stores.ValueStoreFile._instance = None
-    value_stores.ValueStoreEnv._instance = None
-    value_stores.ValueStoreDefault._instance = None
+    value_stores.ValueStoreSecure.reset_instance()
+    value_stores.ValueStoreFile.reset_instance()
+    value_stores.ValueStoreEnv.reset_instance()
+    value_stores.ValueStoreDefault.reset_instance()
 
 
 # -----------------------------
@@ -32,25 +32,30 @@ def reset_singletons():
 @patch("mgconfig.value_stores.config_values")
 @patch("mgconfig.value_stores.ConfigDefs")
 def test_file_retrieve_and_save(ConfigDefs, config_values, tmp_path):
-
-
+    # Setup config file
     configfile = tmp_path / "config.yaml"
     configfile.write_text(yaml.dump({"section": {"key": "val"}}))
 
-    config_values.get.return_value.value = str(configfile)
+    # Mock config_values to return our test file path
+    mock_config_value = MagicMock()
+    mock_config_value.value = str(configfile)
+    config_values.get.return_value = mock_config_value
 
+    # Setup ConfigDefs mock properly
+    mock_cfg_defs = MagicMock()
     def fake_cfg_def_property(item_id, prop):
         if prop == str(value_stores.CDF.SECTION):
             return "section"
         elif prop == str(value_stores.CDF.NAME):
             return "key"
         return None
+    mock_cfg_defs.cfg_def_property.side_effect = fake_cfg_def_property
+    ConfigDefs.return_value = mock_cfg_defs
 
-    ConfigDefs.cfg_def_property.side_effect = fake_cfg_def_property
-
+    # Test the store
     store = value_stores.ValueStoreFile()
-
     val, source = store.retrieve_value("dummy")
+    
     assert val == "val"
     assert source == value_stores.ConfigValueSource.CFGFILE
 
@@ -69,7 +74,7 @@ def test_file_missing_file_returns_empty(config_values, tmp_path):
 
 @patch("mgconfig.value_stores.ConfigDefs")
 def test_env_retrieve(ConfigDefs, monkeypatch):
-    ConfigDefs.cfg_def_property.return_value = "MY_ENV_VAR"
+    ConfigDefs().cfg_def_property.return_value = "MY_ENV_VAR"
     monkeypatch.setenv("MY_ENV_VAR", "123")
 
     store = value_stores.ValueStoreEnv()
@@ -90,7 +95,7 @@ def test_env_save_raises():
 
 @patch("mgconfig.value_stores.ConfigDefs")
 def test_default_retrieve_and_save(ConfigDefs):
-    ConfigDefs.cfg_def_property.return_value = "defaultval"
+    ConfigDefs().cfg_def_property.return_value = "defaultval"
     store = value_stores.ValueStoreDefault()
 
     val, source = store.retrieve_value("dummy")

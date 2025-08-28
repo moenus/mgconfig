@@ -15,7 +15,7 @@ from mgconfig.config_defs import ConfigDefs, ConfigDef, CONFIG_PREFIX, CDF
 
 @pytest.fixture(autouse=True)
 def mock_config_types(monkeypatch):
-    ConfigDefs.reset()
+    ConfigDefs.reset_instance()
     mock_ct = MagicMock()
     mock_ct._config_types = ["string", "int"]
     mock_ct.parse_value.side_effect = lambda value, t: (isinstance(
@@ -83,7 +83,7 @@ def test_parse_with_default_values(tmp_path, mock_defaults):
 
 
 def test_invalid_yaml_structure(tmp_path):
-    ConfigDefs.reset()
+    ConfigDefs.reset_instance()
     yaml_path = tmp_path / "cfg.yaml"
     yaml_path.write_text(yaml.safe_dump(
         make_yaml_data(valid=False)), encoding="utf-8")
@@ -93,7 +93,7 @@ def test_invalid_yaml_structure(tmp_path):
 
 
 def test_invalid_prefix_raises(tmp_path):
-    ConfigDefs.reset()
+    ConfigDefs.reset_instance()
     data = make_yaml_data()
     data[0]["prefix"] = "_bad"
     yaml_path = tmp_path / "cfg.yaml"
@@ -104,7 +104,7 @@ def test_invalid_prefix_raises(tmp_path):
 
 
 def test_duplicate_config_id_raises(tmp_path):
-    ConfigDefs.reset()
+    ConfigDefs.reset_instance()
     data = make_yaml_data()
     data.append(make_yaml_data()[0])
     yaml_path = tmp_path / "cfg.yaml"

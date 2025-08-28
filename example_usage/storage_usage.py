@@ -49,7 +49,7 @@ track_mem('Start: ')
 ConfigDefs(CONFIG_DEFINITIONS_YAML)
 track_mem("CDef  :")
 
-ConfigDefs.reset()
+ConfigDefs.reset_instance()
 track_mem("Reset  :")
 
 count_objs(["ConfigDef", "ConfigDefs", "DefDict", "CDF"])
@@ -83,7 +83,7 @@ instaance = None
 referrers = None        
 
 config = None
-Configuration.reset()
+Configuration.reset_instance()
 track_mem("Reset: ")
 
 count_objs(["Configuration", "ConfigDefs", "ConfigValue"])
@@ -107,7 +107,7 @@ objgraph.show_most_common_types()
 config = Configuration(CONFIG_DEFINITIONS_YAML)
 track_mem("Config:")
 
-Configuration.reset()
+Configuration.reset_instance()
 track_mem("Reset: ")
 
 config = Configuration(CONFIG_DEFINITIONS_YAML)

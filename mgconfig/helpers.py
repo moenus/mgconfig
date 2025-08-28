@@ -164,16 +164,33 @@ import threading
 
 class SingletonMeta(type):
     _instances = {}
-    _lock = threading.Lock()
 
     def __call__(cls, *args, **kwargs):
-        with cls._lock:
-            if cls not in cls._instances:
-                cls._instances[cls] = super().__call__(*args, **kwargs)
-        return cls._instances[cls]
+        # attach a per-class lock lazily
+        lock = getattr(cls, "_lock", None)
+        if lock is None:
+            lock = threading.RLock()
+            setattr(cls, "_lock", lock)
+            
+        if cls in SingletonMeta._instances:
+            return SingletonMeta._instances[cls]
+      
+        with lock:
+            # double-check inside lock
+            if cls in SingletonMeta._instances:
+                return SingletonMeta._instances[cls]
+
+            # 🔑 Create instance *outside the lock* to avoid deadlocks
+            instance = super().__call__(*args, **kwargs)
+
+            SingletonMeta._instances[cls] = instance
+            return instance
 
     def reset_instance(cls):
-        """Delete the stored instance (e.g. for testing)."""
-        with cls._lock:
-            if cls in cls._instances:
-                del cls._instances[cls]
+        """Reset the singleton instance for this class."""
+        lock = getattr(cls, "_lock", None)
+        if lock is None:
+            return
+        with lock:
+            if cls in SingletonMeta._instances:
+                del SingletonMeta._instances[cls]

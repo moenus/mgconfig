@@ -198,14 +198,14 @@ def test_defdict_set_invalid_key_type():
 # ----------------------------
 
 def test_configdefs_load_valid(temp_yaml_file):
-    ConfigDefs.reset()
+    ConfigDefs.reset_instance()
     cfg_defs = ConfigDefs(temp_yaml_file)
     assert "app_port" in cfg_defs
     assert isinstance(cfg_defs["app_port"], ConfigDef)
 
 
 def test_configdefs_invalid_yaml_structure(tmp_path):
-    ConfigDefs.reset()   
+    ConfigDefs.reset_instance()   
     path = tmp_path / "invalid.yaml"
     with path.open("w", encoding="utf-8") as f:
         yaml.safe_dump({"notalist": "value"}, f)
@@ -215,7 +215,7 @@ def test_configdefs_invalid_yaml_structure(tmp_path):
 
 
 def test_configdefs_invalid_prefix(temp_yaml_file, valid_config_def_data):
-    ConfigDefs.reset()
+    ConfigDefs.reset_instance()
     # modify prefix to be invalid
     valid_config_def_data[0]["prefix"] = "_badprefix"
     path = temp_yaml_file
@@ -239,7 +239,7 @@ def test_configdefs_duplicate_definition(tmp_path, valid_config_def_data):
 
 
 def test_configdefs_default_function(monkeypatch, tmp_path, valid_config_def_data):
-    ConfigDefs.reset()   
+    ConfigDefs.reset_instance()   
     def fake_function():
         return 9999
 
@@ -256,7 +256,7 @@ def test_configdefs_default_function(monkeypatch, tmp_path, valid_config_def_dat
 
 
 def test_configdefs_default_function_not_callable(monkeypatch, tmp_path, valid_config_def_data):
-    ConfigDefs.reset()   
+    ConfigDefs.reset_instance()   
     monkeypatch.setattr(DefaultFunctions, "contains", lambda self, name: True)
     monkeypatch.setattr(DefaultFunctions, "get", lambda self, name: 123)
 
@@ -270,7 +270,7 @@ def test_configdefs_default_function_not_callable(monkeypatch, tmp_path, valid_c
 
 
 def test_configdefs_default_from_defaultvalues(monkeypatch, tmp_path, valid_config_def_data):
-    ConfigDefs.reset()   
+    ConfigDefs.reset_instance()   
     monkeypatch.setattr(DefaultFunctions, "contains", lambda self, name: False)
     monkeypatch.setattr(DefaultValues, "dict", {"app_port": 123})
     monkeypatch.setattr(DefaultValues, "get", lambda self, key: 123)

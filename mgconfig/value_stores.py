@@ -3,7 +3,7 @@
 
 import os
 import yaml
-from .helpers import logger, config_securestorefile, config_configfile
+from .helpers import logger, config_securestorefile, config_configfile, SingletonMeta
 from .secure_store import SecureStore
 from .key_provider import KeyProvider
 from .config_defs import CDF, ConfigDefs
@@ -23,17 +23,11 @@ class ConfigValueSource(str, Enum):
     ENCRYPT = 'encrypt'
 
 
-class ValueStore (ABC):
+class ValueStore (metaclass= SingletonMeta):
     """Abstract base class for configuration value storage backends.
 
     Subclasses must implement both `save_value` and `retrieve_value`.
     """
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
     
     def __init__(self, source: ConfigValueSource):
         """Initializes a value store.
@@ -200,8 +194,8 @@ class ValueStoreFile(ValueStore):
             tuple[Any, ConfigValueSource]: The retrieved value (or None if not found)
             and the source type.
         """
-        config_section = ConfigDefs.cfg_def_property(item_id, str(CDF.SECTION))
-        config_name = ConfigDefs.cfg_def_property(item_id, str(CDF.NAME))
+        config_section = ConfigDefs().cfg_def_property(item_id, str(CDF.SECTION))
+        config_name = ConfigDefs().cfg_def_property(item_id, str(CDF.NAME))
         if config_section in self.configfile_content and config_name in self.configfile_content[config_section]:
             return self.configfile_content[config_section][config_name], self._source
         return None, self._source
@@ -216,8 +210,8 @@ class ValueStoreFile(ValueStore):
         Returns:
             bool: True if saved successfully, False otherwise.
         """
-        config_section = ConfigDefs.cfg_def_property(item_id, str(CDF.SECTION))
-        config_name = ConfigDefs.cfg_def_property(item_id, str(CDF.NAME))
+        config_section = ConfigDefs().cfg_def_property(item_id, str(CDF.SECTION))
+        config_name = ConfigDefs().cfg_def_property(item_id, str(CDF.NAME))
         if config_section not in self.configfile_content:
             self.configfile_content[config_section] = {}
         self.configfile_content[config_section][config_name] = value
@@ -266,7 +260,7 @@ class ValueStoreEnv(ValueStore):
             tuple[Any, ConfigValueSource]: The retrieved environment variable value
             (or None if not set) and the source type.
         """
-        config_env = ConfigDefs.cfg_def_property(item_id, str(CDF.ENV))
+        config_env = ConfigDefs().cfg_def_property(item_id, str(CDF.ENV))
         if config_env is not None:
             return os.getenv(config_env), self._source
         return None, self._source
@@ -295,7 +289,7 @@ class ValueStoreDefault(ValueStore):
             tuple[Any, ConfigValueSource]: The default value (or None if not defined)
             and the source type.
         """
-        config_default = ConfigDefs.cfg_def_property(item_id, str(CDF.DEFAULT))
+        config_default = ConfigDefs().cfg_def_property(item_id, str(CDF.DEFAULT))
         if config_default:
             return config_default, self._source
         return None, self._source
