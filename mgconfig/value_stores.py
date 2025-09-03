@@ -3,7 +3,7 @@
 
 import os
 import yaml
-from .helpers import config_logger, config_securestorefile, config_configfile, SingletonMeta
+from .helpers import config_logger, ConfigKeyMap, SingletonMeta, APP, SEC
 from .secure_store import SecureStore
 from .key_provider import KeyProvider
 from .config_defs import CDF, ConfigDefs
@@ -13,6 +13,9 @@ from pathlib import Path
 from abc import abstractmethod
 from .config_values import config_values
 
+
+config_configfile = ConfigKeyMap(APP,'configfile')
+config_securestorefile = ConfigKeyMap(SEC, 'securestore_file')
 
 class ConfigValueSource(str, Enum):
     """Enumerates the possible configuration value sources."""
@@ -83,7 +86,7 @@ class ValueStoreSecure(ValueStore):
         """
         super().__init__(ConfigValueSource.ENCRYPT)
         self.securestore_file = config_values.get(
-            config_securestorefile.config_id).value
+            config_securestorefile.id).value
         # initialize key provider with the configuration values from Configuration object
         self.key_provider = KeyProvider()
         try:
@@ -168,7 +171,7 @@ class ValueStoreFile(ValueStore):
 
         """
         super().__init__(ConfigValueSource.CFGFILE)
-        self.config_file = config_values.get(config_configfile.config_id, fail_on_error = True).value
+        self.config_file = config_values.get(config_configfile.id, fail_on_error = True).value
         self.configfile_content = self._read_configfile()
 
     def _read_configfile(self) -> dict[str, Any]:

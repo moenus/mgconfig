@@ -10,99 +10,18 @@ LOGGER_NAME = "mgconf"
 
 
 # ------------------------------------------------------------------------------------------------------------
-# Section(Enum), ConstSection, ConstConfig, lazy_build_config_id and pseudo constants
+# ConstConfig, lazy_build_config_id and pseudo constants
 # ------------------------------------------------------------------------------------------------------------
 
-class Section(Enum):
-    """Enumeration of supported configuration sections."""
-    APP = "APP"
-    SEC = "SEC"
+APP = 'app'
+SEC = 'sec'
 
 
-class ConstSection:
-    """Represents a constant configuration section (singleton per handle)."""
-    _registry: dict[str, "ConstSection"] = {}  # name -> instance
-
-    def __new__(cls, section_handle, *args, **kwargs):
-        """Ensure only one instance exists per section handle.
-
-        Args:
-            section_handle (str): Unique identifier for the section.
-
-        Returns:
-            ConstSection: Existing or newly created instance.
-        """
-        if section_handle in cls._registry:
-            return cls._registry[section_handle]  # return existing instance
-        instance = super().__new__(cls)
-        cls._registry[section_handle] = instance
-        return instance
-
-    def __init__(self, section_handle: str, section_prefix: str = None):
-        """Initialize a section with a handle and optional prefix.
-
-        Args:
-            section_handle (str): Unique identifier for the section.
-            section_prefix (str, optional): String prefix used in config IDs.
-        """
-        if not hasattr(self, "_initialized"):
-            self._section_handle = section_handle
-            self._section_prefix = section_prefix
-            self._initialized = True
-
-    @property
-    def section_prefix(self) -> str:
-        """Return the section prefix.
-
-        Returns:
-            str: The prefix string.
-
-        Raises:
-            ValueError: If the section prefix is not defined.
-        """
-        if self._section_prefix is None:
-            raise ValueError(
-                f'Section prefix for {self._section_handle} is undefinded.')
-        return self._section_prefix
-
-    @section_prefix.setter
-    def section_prefix(self, value: str):
-        """Set the section prefix.
-
-        Args:
-            value (str): Prefix string to set.
-        """
-        self._section_prefix = value
-
-    @property
-    def section_handle(self) -> str:
-        """Return the section handle.
-
-        Returns:
-            str: The section handle.
-        """
-        return self._section_handle
-
-    @classmethod
-    def list_handles(cls) -> list[str]:
-        """List all registered section handles.
-
-        Returns:
-            list[str]: List of section handle strings.
-        """
-
-        return [item.section_handle for item in cls._registry.values()]
-
-
-section_APP = ConstSection(Section.APP, 'app')
-section_SEC = ConstSection(Section.SEC, 'sec')
-
-
-class ConstConfig:
+class ConfigKeyMap:
     """Represents a constant configuration key (singleton per handle)."""
-    _registry: dict[str, "ConstConfig"] = {}  # name -> instance
+    _registry: dict[str, "ConfigKeyMap"] = {}  # name -> instance
 
-    def __new__(cls, config_handle, *args, **kwargs):
+    def __new__(cls, section_prefix: str, config_handle, *args, **kwargs):
         """Ensure only one instance exists per config handle.
 
         Args:
@@ -117,7 +36,7 @@ class ConstConfig:
         cls._registry[config_handle] = instance
         return instance
 
-    def __init__(self, config_handle: str, section: ConstSection = None):
+    def __init__(self, section_prefix: str,  config_handle: str):
         """Initialize a config constant.
 
         Args:
@@ -128,47 +47,18 @@ class ConstConfig:
         # Prevent reinitialization if instance already exists
         if not hasattr(self, "_initialized"):
             self._config_handle = config_handle
-            self._section = section
-            self._config_id: str | None = None
+            self.config_name = config_handle
+            self.section_prefix = section_prefix
             self._initialized = True
 
     @property
-    def config_handle(self) -> str:
-        """Return the config handle.
-
-        Returns:
-            str: The config handle string.
-        """
-        return self._config_handle
-
-    @property
-    def config_id(self) -> str:
+    def id(self) -> str:
         """Return or lazily build the config ID.
 
         Returns:
             str | None: Config ID string, or None if no section is set.
         """
-        if self._config_id is None and self._section is not None:
-            # set a default config_id to enhance robustness
-            self._config_id = f'{self._section.section_prefix}_{self._config_handle}'
-        return self._config_id
-
-    @config_id.setter
-    def config_id(self, value: str):
-        """Manually override the config ID.
-
-        Args:
-            value (str): New config ID value.
-        """
-        self._config_id = value
-
-    # @property
-    # def section_handle(self):
-    #     return self._section_handle
-
-    # @section_handle.setter
-    # def section_handle(self, value):
-    #     self._section_handle = value
+        return self.section_prefix + '_' + self.config_name
 
     @classmethod
     def list_handles(cls) -> list[str]:
@@ -180,28 +70,9 @@ class ConstConfig:
         return [item.config_handle for item in cls._registry.values()]
 
 
-config_configfile = ConstConfig('configfile', section_APP)
-config_securestorefile = ConstConfig('securestore_file', section_SEC)
-config_keyfile = ConstConfig('keyfile_filepath', section_SEC)
-config_service_name = ConstConfig('keyring_service_name', section_SEC)
-
-
-def lazy_build_config_id(section_obj: ConstSection, config_name: str) -> str:
-    """Build a config ID from a section and config name.
-
-    Args:
-        section_obj (ConstSection): Section to use.
-        config_name (str): Name of the config key.
-
-    Returns:
-        str: Combined config ID string.
-    """    
-    return f'{section_obj.section_prefix}_{config_name}'
-
 # ------------------------------------------------------------------------------------------------------------
 # config_logger
 # ------------------------------------------------------------------------------------------------------------
-
 
 class LoggerWrapper:
     """Wrapper around Python's logging.Logger with default console output."""
@@ -250,7 +121,7 @@ config_logger = LoggerWrapper()
 
 
 class SingletonMeta(type):
-    """Thread-safe metaclass for implementing the Singleton pattern."""    
+    """Thread-safe metaclass for implementing the Singleton pattern."""
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -262,7 +133,7 @@ class SingletonMeta(type):
 
         Returns:
             object: Singleton instance of the class.
-        """        
+        """
         # attach a per-class lock lazily
         lock = getattr(cls, "_lock", None)
         if lock is None:
@@ -288,7 +159,7 @@ class SingletonMeta(type):
 
         Removes the instance from the registry, so a new one will be created
         on the next instantiation.
-        """        
+        """
         """Reset the singleton instance for this class."""
         lock = getattr(cls, "_lock", None)
         if lock is None:

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 from mgconfig.keystores import KeyStores
-from mgconfig.helpers import lazy_build_config_id, section_SEC
+from mgconfig.helpers import ConfigKeyMap, SEC
 from typing import Any, Dict
 from .config_values import config_values
 
@@ -72,31 +72,17 @@ class Key:
                 f'Keystore {self.keystore_name} cannot provide a value for {self.item_name}.')
 
 
-MASTERKEYNAME = 'master_key'
-
 ITEM_NAME_TAG = 'item_name'
 KEYSTORE_NAME_TAG = 'keystore'
+CONFIGURED_KEYS = ['master_key']
 
+key_config = {}
 
-def get_from_conf( key_name: str, value_name: str) -> str:
-    """Retrieves a value from the configuration using a composite config ID.
-
-    Args:
-        conf (Dict[str, str]): Configuration dictionary.
-        key_name (str): The logical key name (e.g., 'master_key').
-        value_name (str): The value type (e.g., 'item_name' or 'keystore').
-
-    Returns:
-        str: The corresponding configuration value.
-
-    Raises:
-        ValueError: If the value cannot be found in the configuration.
-    """
-    config_id = lazy_build_config_id(section_SEC, key_name + "_" + value_name)
-    config_value = config_values.get(config_id)
-    if config_value is None:
-        raise ValueError(f'Cannot find {config_id} in configuration.')
-    return config_value.value
+for key_name in CONFIGURED_KEYS:
+    key_config[key_name] = {
+        KEYSTORE_NAME_TAG: ConfigKeyMap(SEC, key_name + '_' + KEYSTORE_NAME_TAG),
+        ITEM_NAME_TAG: ConfigKeyMap(SEC, key_name + '_' + ITEM_NAME_TAG)
+    }
 
 
 class KeyProvider:
@@ -106,7 +92,6 @@ class KeyProvider:
         VALID_KEYS (list[str]): List of allowed key names.
         _keys (dict[str, Key]): Mapping of key names to Key instances.
     """
-    VALID_KEYS = [MASTERKEYNAME]
 
     def __init__(self) -> None:
         """Initializes the KeyProvider by loading keys from configuration.
@@ -119,13 +104,26 @@ class KeyProvider:
         """
         self._keys = {}
 
-        for key_name in self.VALID_KEYS:
-            keystore_name = get_from_conf(key_name, KEYSTORE_NAME_TAG)
+        for key_name in key_config:
+            keystore_name = self._get_value(key_name, KEYSTORE_NAME_TAG)
+            item_name =self._get_value(key_name, ITEM_NAME_TAG)
             if not KeyStores.contains(keystore_name):
-                raise ValueError(f'Invalid keystore name {keystore_name}')
-            KeyStores.get(keystore_name).configure()
-            item_name = get_from_conf(key_name, ITEM_NAME_TAG)
-            self._keys[key_name] = Key(keystore_name, item_name)
+                raise ValueError(
+                    f'Invalid keystore name {keystore_name}')
+            try:
+                KeyStores.get(keystore_name).configure()
+                self._keys[key_name] = Key(keystore_name, item_name)
+            except Exception as e:
+                raise ValueError(
+                    f'Cannot find valid configuration for key {key_name}.')
+
+    def _get_value(self, key_name, sub_tag: str):
+            value_obj = config_values.get(
+                key_config[key_name][sub_tag].id)
+            if value_obj:
+                return value_obj.value
+            raise ValueError(
+                    f'Cannot find valid configuration for id {key_config[key_name][sub_tag].id}.')
 
     def get(self, name: str) -> str:
         """Retrieves the value of a named key.

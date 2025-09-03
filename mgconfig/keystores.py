@@ -5,9 +5,12 @@ import keyring
 import os
 import json
 from pathlib import Path
-from .helpers import config_keyfile, config_service_name, ConstConfig, config_logger
+from .helpers import ConfigKeyMap, config_logger, SEC
 from typing import Any, Dict, Optional
 from .config_values import config_values
+
+config_keyfile = ConfigKeyMap(SEC, 'keyfile_filepath')
+config_service_name = ConfigKeyMap(SEC, 'keyring_service_name')
 
 
 class KeyStore:
@@ -28,7 +31,7 @@ class KeyStore:
     def __init__(self):
         """Initializes the keystore with empty parameters."""
         self.params: Optional[Dict[str, Any]] = None
-        self.mandatory_conf_names = []
+        self.mandatory_confs: list[ConfigKeyMap] = []
 
     def get(self, name: str) -> Optional[str]:
         """Retrieve a value from the keystore.
@@ -82,16 +85,16 @@ class KeyStore:
         """
         self.params = {}
 
-        for conf_name in self.mandatory_conf_names:
-            const_config = ConstConfig(conf_name)
-            config_value = config_values.get(const_config.config_id)
+        for config_key_map in self.mandatory_confs:
+
+            config_value = config_values.get(config_key_map.id)
             if config_value is None:
                 raise ValueError(
-                    f'Configuration ID {const_config.config_id} for keystore {self.keystore_name} not found.')
-            self.params[conf_name] = config_value.value
-            if self.params[conf_name] is None:
+                    f'Configuration ID {config_key_map.id} for keystore {self.keystore_name} not found.')
+            self.params[config_key_map] = config_value.value
+            if self.params[config_key_map] is None:
                 raise ValueError(
-                    f'Mandatory parameter {conf_name} for keystore {self.keystore_name} not found.')
+                    f'Mandatory parameter {config_key_map.id} for keystore {self.keystore_name} not found.')
 
     def check_configuration(self):
         """Validate that the keystore has been properly configured.
@@ -118,7 +121,7 @@ class KeyStoreFile(KeyStore):
         """Initialize the file-based keystore."""
         super().__init__()
         self.filedata = None
-        self.mandatory_conf_names = [config_keyfile.config_handle]
+        self.mandatory_confs: list[ConfigKeyMap] = [config_keyfile]
 
     @property
     def filepath(self):
@@ -127,7 +130,7 @@ class KeyStoreFile(KeyStore):
         Returns:
             str: File path from configuration.
         """
-        return self.get_param(config_keyfile.config_handle)
+        return self.get_param(config_keyfile.id)
 
     def check_configuration(self):
         """Validate configuration and load file data if necessary.
@@ -200,7 +203,7 @@ class KeyStoreKeyring(KeyStore):
     def __init__(self):
         """Initialize the keyring-based keystore."""
         super().__init__()
-        self.mandatory_conf_names = [config_service_name.config_handle]
+        self.mandatory_confs: list[ConfigKeyMap] = [config_service_name]
 
     @property
     def service_name(self) -> str:
@@ -209,7 +212,7 @@ class KeyStoreKeyring(KeyStore):
         Returns:
             str: Service name.
         """
-        return self.get_param(config_service_name.config_handle)
+        return self.get_param(config_service_name.id)
 
     def get(self, item_name: str) -> Optional[str]:
         """Retrieve a value from the keyring.
