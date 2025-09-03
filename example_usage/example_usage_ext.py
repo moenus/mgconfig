@@ -56,9 +56,9 @@ config = Configuration(CONFIG_DEFINITIONS_YAML)
 # ---------------------------------------------------------------------
 # checking specific post-processing results
 # ---------------------------------------------------------------------
-if config.extended_item_exists(LOCAL_TZ_ID):
+if LOCAL_TZ_ID in config:
     app_logger.info(
-        f'Local timezone: {config.get_extended_item(LOCAL_TZ_ID).zone}')
+        f'Local timezone: {config.get_value(LOCAL_TZ_ID).zone}')
     # value of 'local_tz' can be directly accessed as property using config.extended.local_tz
 else:
     app_logger.info(

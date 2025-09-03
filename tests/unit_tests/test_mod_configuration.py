@@ -1,5 +1,4 @@
 import pytest
-from types import SimpleNamespace
 from unittest.mock import patch, MagicMock
 
 import mgconfig.configuration as configuration
@@ -81,7 +80,7 @@ def test_save_new_value_applies_immediately(mock_config_env, mock_handlers):
 
 def test_extended_items(mock_handlers):
     cfg = configuration.Configuration("dummy.json")
-    cfg.set_extended_item("extra", 42)
-    assert cfg.extended_item_exists("extra")
-    assert cfg.get_extended_item("extra") == 42
-    assert cfg.get_extended_item("missing") is None
+    cfg.set_property_value("extra", 42)
+    assert "extra" in cfg
+    assert cfg.get_value("extra") == 42
+    assert cfg.get_value("missing") is None

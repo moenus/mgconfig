@@ -6,7 +6,6 @@ from .config_values import config_values, config_values_new
 from .config_value_handler import ConfigValue, ConfigValueHandler
 from .extension_system import PostProcessing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
-from types import SimpleNamespace
 from .helpers import SingletonMeta
 
 
@@ -34,10 +33,10 @@ class Configuration(metaclass=SingletonMeta):
         self._initialized = True
         ConfigDefs(cfg_defs_filepaths)
         ConfigValueHandler.build()
-        self.extended = SimpleNamespace()
+
 
         for config_id, config_value in config_values.items():
-             setattr(self, config_id, config_value.value)
+             self.set_property_value(config_id, config_value.value)
         del config_value  #optimization to drop the object before function exit.
 
         # call provided post processing functions
@@ -152,39 +151,18 @@ class Configuration(metaclass=SingletonMeta):
         result = ConfigValueHandler.save_new_value(
             config_id, new_value, apply_immediately)
         if result and apply_immediately:
-            self._set_property(config_id, new_value)
+            self.set_property_value(config_id, new_value)
         return result
 
-    def set_extended_item(self, name: str, value: Any) -> None:
+    def set_property_value(self, name: str, value: Any) -> None:
         """Set or add an attribute in the `extended` namespace.
 
         Args:
             name (str): The attribute name.
             value (Any): The value to assign to the attribute.
         """
-        setattr(self.extended, name, value)
+        setattr(self, name, value)
 
-    def extended_item_exists(self, name: str) -> bool:
-        """Check whether an attribute exists in the `extended` namespace.
-
-        Args:
-            name (str): The attribute name.
-
-        Returns:
-            bool: True if the attribute exists, False otherwise.
-        """
-        return hasattr(self.extended, name)
-
-    def get_extended_item(self, name: str) -> Any:
-        """Retrieve an attribute from the `extended` namespace.
-
-        Args:
-            name (str): The attribute name.
-
-        Returns:
-            Any: The attribute value, or None if it does not exist.
-        """
-        return getattr(self.extended, name, None)
 
     @staticmethod
     def _get_config_row(config_def: ConfigDef, value_str: str, source: str) -> List[Any]:
@@ -210,7 +188,7 @@ class Configuration(metaclass=SingletonMeta):
             'ro' if config_def.config_readonly else 'rw'
         ]
 
-    def _set_property(self, config_id: str, value: Any) -> None:
+    def set_property_value(self, config_id: str, value: Any) -> None:
         """Assign a configuration value as an attribute of the instance.
 
         Args:

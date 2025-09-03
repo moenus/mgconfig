@@ -187,7 +187,7 @@ class ValueStoreFile(ValueStore):
                 # Use safe_load to prevent code execution
                 return yaml.safe_load(file)
         else:
-            config_logger.info(f'No config file "{self.config_file}" found.')
+            config_logger.info(f'Config file "{self.config_file}" not found.')
             return {}
 
     def retrieve_value(self, item_id: str) -> tuple[Any, ConfigValueSource]:
