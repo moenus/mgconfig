@@ -3,8 +3,11 @@ import tempfile
 import yaml
 import pytest
 from unittest.mock import patch, MagicMock
+from pathlib import Path
+import json
+from typing import Any
 
-from  mgconfig import value_stores
+from mgconfig import value_stores
 
 
 # -----------------------------
@@ -26,23 +29,53 @@ def reset_singletons():
 
 
 # -----------------------------
+# ConfigValueSource Tests
+# -----------------------------
+def test_config_value_source_str():
+    """Test string conversion of ConfigValueSource enum."""
+    assert str(value_stores.ConfigValueSource.CFGFILE) == "cfgfile"
+    assert str(value_stores.ConfigValueSource.ENV_VAR) == "env_var"
+    assert str(value_stores.ConfigValueSource.DEFAULT) == "default"
+    assert str(value_stores.ConfigValueSource.ENCRYPT) == "encrypt"
+
+
+# -----------------------------
+# ValueStore Base Class Tests
+# -----------------------------
+def test_valuestore_singleton():
+    """Test ValueStore maintains singleton pattern."""
+    class TestStore(value_stores.ValueStore):
+        def save_value(self, item_id: str, value: Any) -> bool:
+            return True
+
+        def retrieve_value(self, item_id: str) -> tuple[Any, value_stores.ConfigValueSource]:
+            return None, self._source
+
+    store1 = TestStore(value_stores.ConfigValueSource.DEFAULT)
+    store2 = TestStore(value_stores.ConfigValueSource.DEFAULT)
+    assert store1 is store2
+
+# -----------------------------
 # ValueStoreFile
 # -----------------------------
 
-@patch("mgconfig.value_stores.config_values")
+
+@patch("mgconfig.value_stores.config_items")
 @patch("mgconfig.value_stores.ConfigDefs")
-def test_file_retrieve_and_save(ConfigDefs, config_values, tmp_path):
+def test_file_retrieve_and_save(ConfigDefs, config_items, tmp_path):
     # Setup config file
     configfile = tmp_path / "config.yaml"
     configfile.write_text(yaml.dump({"section": {"key": "val"}}))
 
-    # Mock config_values to return our test file path
+    # Mock config_items to return our test file path
     mock_config_value = MagicMock()
     mock_config_value.value = str(configfile)
-    config_values.get.return_value = mock_config_value
+    config_items.get_value.return_value = str(
+        configfile)  # Changed from get to get_value
 
     # Setup ConfigDefs mock properly
     mock_cfg_defs = MagicMock()
+
     def fake_cfg_def_property(item_id, prop):
         if prop == str(value_stores.CDF.SECTION):
             return "section"
@@ -55,22 +88,139 @@ def test_file_retrieve_and_save(ConfigDefs, config_values, tmp_path):
     # Test the store
     store = value_stores.ValueStoreFile()
     val, source = store.retrieve_value("dummy")
-    
+
     assert val == "val"
     assert source == value_stores.ConfigValueSource.CFGFILE
 
+    # Test save functionality
+    assert store.save_value("dummy", "new_val") is True
+    val, source = store.retrieve_value("dummy")
+    assert val == "new_val"
 
 
-@patch("mgconfig.value_stores.config_values")
-def test_file_missing_file_returns_empty(config_values, tmp_path):
-    config_values.get.return_value.value = str(tmp_path / "nofile.yaml")
+def test_file_invalid_yaml(tmp_path):
+    """Test handling of invalid YAML file."""
+    configfile = tmp_path / "invalid.yaml"
+    configfile.write_text("invalid: yaml: content: [")
+
+    with patch("mgconfig.value_stores.config_items") as mock_items:
+        mock_items.get_value.return_value = str(configfile)
+        store = value_stores.ValueStoreFile()
+        assert store.configfile_content == {}
+
+
+@patch("mgconfig.value_stores.ConfigDefs")
+@patch("mgconfig.value_stores.config_items")
+def test_file_write_permission_error(mock_config_items, MockConfigDefs, tmp_path):
+    """Test handling of write permission errors."""
+    configfile = tmp_path / "readonly.yaml"
+
+    # Mock config_items
+    mock_config_items.get_value.return_value = str(configfile)
+
+    # Mock ConfigDefs
+    mock_cfg_defs = MagicMock()
+    def fake_cfg_def_property(item_id, prop):
+        if prop == str(value_stores.CDF.SECTION):
+            return "section"
+        elif prop == str(value_stores.CDF.NAME):
+            return "key"
+        return None
+    mock_cfg_defs.cfg_def_property.side_effect = fake_cfg_def_property
+    MockConfigDefs.return_value = mock_cfg_defs
+
+    # Create store and test permission error
     store = value_stores.ValueStoreFile()
+    with patch('builtins.open', side_effect=PermissionError):
+        assert store.save_value("test", "value") is False
+
+
+@patch("mgconfig.value_stores.config_items")  # First patch
+@patch("mgconfig.value_stores.ConfigDefs")    # Second patch
+def test_file_missing_file_returns_empty(ConfigDefs, config_items, tmp_path):
+    """Test that missing config file returns empty dictionary."""
+    # Create mock config value with non-existent file
+    mock_config_value = MagicMock()
+    mock_config_value.value = str(tmp_path / "nofile.yaml")
+    config_items.get_value.return_value = mock_config_value.value
+
+    # Setup ConfigDefs mock
+    mock_cfg_defs = MagicMock()
+
+    def fake_cfg_def_property(item_id, prop):
+        if prop == str(value_stores.CDF.SECTION):
+            return "section"
+        elif prop == str(value_stores.CDF.NAME):
+            return "key"
+        return None
+    mock_cfg_defs.cfg_def_property.side_effect = fake_cfg_def_property
+    ConfigDefs.return_value = mock_cfg_defs
+
+    # Test the store
+    store = value_stores.ValueStoreFile()
+
+    # Test content before any operations
     assert store.configfile_content == {}
 
+    # Test retrieve operation
+    val, source = store.retrieve_value("dummy")
+    assert val is None
+    assert source == value_stores.ConfigValueSource.CFGFILE
+
+
+@patch("mgconfig.value_stores.config_items")
+def test_secure_store_initialization_logging(mock_items, caplog):
+    """Test logging during secure store initialization."""
+    # Set logging level to capture all messages
+    caplog.set_level('DEBUG')
+    
+    # Setup mock config
+    mock_config = MagicMock()
+    mock_config.value = "test.sec"
+    mock_items.get.return_value = mock_config
+
+    with patch("mgconfig.value_stores.KeyProvider"):
+        with patch("mgconfig.value_stores.SecureStore") as MockSecureStore:
+            # Test successful initialization
+            mock_store = MagicMock()
+            mock_store.validate_master_key.return_value = True
+            MockSecureStore.return_value = mock_store
+
+            store = value_stores.ValueStoreSecure()
+            assert "Secure store successfully initialized" in caplog.text
+
+            # Test failed validation
+            caplog.clear()
+            mock_store.validate_master_key.return_value = False
+            value_stores.ValueStoreSecure.reset_instance()  # Reset singleton
+            store = value_stores.ValueStoreSecure()
+            assert "Secure store corrupted or master key invalid." in caplog.text
+
+def test_secure_store_save_logging(caplog):
+    """Test logging during secure store save operations."""
+    with patch("mgconfig.value_stores.config_items") as mock_items:
+        mock_items.get.return_value = MagicMock(value="test.sec")
+
+        with patch("mgconfig.value_stores.KeyProvider"):
+            with patch("mgconfig.value_stores.SecureStore") as MockSecureStore:
+                store = value_stores.ValueStoreSecure()
+
+                # Test successful save
+                caplog.clear()
+                assert store.save_value("test_id", "secret")
+                assert "saved to keystore" in caplog.text
+
+                # Test failed save
+                caplog.clear()
+                MockSecureStore.return_value.store_secret.side_effect = Exception(
+                    "Save failed")
+                assert not store.save_value("test_id", "secret")
+                assert "Cannot store secret" in caplog.text
 
 # -----------------------------
 # ValueStoreEnv
 # -----------------------------
+
 
 @patch("mgconfig.value_stores.ConfigDefs")
 def test_env_retrieve(ConfigDefs, monkeypatch):
@@ -87,6 +237,28 @@ def test_env_save_raises():
     store = value_stores.ValueStoreEnv()
     with pytest.raises(NotImplementedError):
         store.save_value("dummy", "val")
+
+
+@patch("mgconfig.value_stores.ConfigDefs")
+def test_env_retrieve_missing_env_var(ConfigDefs):
+    """Test retrieving non-existent environment variable."""
+    ConfigDefs().cfg_def_property.return_value = "NON_EXISTENT_VAR"
+
+    store = value_stores.ValueStoreEnv()
+    val, source = store.retrieve_value("dummy")
+    assert val is None
+    assert source == value_stores.ConfigValueSource.ENV_VAR
+
+
+@patch("mgconfig.value_stores.ConfigDefs")
+def test_env_retrieve_no_env_mapping(ConfigDefs):
+    """Test retrieving when no environment variable is mapped."""
+    ConfigDefs().cfg_def_property.return_value = None
+
+    store = value_stores.ValueStoreEnv()
+    val, source = store.retrieve_value("dummy")
+    assert val is None
+    assert source == value_stores.ConfigValueSource.ENV_VAR
 
 
 # -----------------------------
@@ -113,13 +285,13 @@ def test_default_retrieve_and_save(ConfigDefs):
 
 @patch("mgconfig.value_stores.KeyProvider")
 @patch("mgconfig.value_stores.KeyProvider")
-@patch("mgconfig.value_stores.config_values")
+@patch("mgconfig.value_stores.config_items")
 @patch("mgconfig.value_stores.SecureStore")
-def test_secure_save_and_retrieve(SecureStore, config_values, KeyProvider, tmp_path):
+def test_secure_save_and_retrieve(SecureStore, config_items, KeyProvider, tmp_path):
     # Create a mock config value object
     mock_config_value = MagicMock()
     mock_config_value.value = str(tmp_path / "store.sec")
-    config_values.get.return_value = mock_config_value
+    config_items.get.return_value = mock_config_value
 
     # Rest of the test setup
     secure_mock = MagicMock()
@@ -148,13 +320,13 @@ def test_secure_save_and_retrieve(SecureStore, config_values, KeyProvider, tmp_p
 
 
 @patch("mgconfig.value_stores.KeyProvider")
-@patch("mgconfig.value_stores.config_values")
+@patch("mgconfig.value_stores.config_items")
 @patch("mgconfig.value_stores.ValueStoreSecure._get_new_secure_store")
-def test_secure_error_cases(mock_get_store, mock_config_values, mock_KeyProvider, tmp_path):
+def test_secure_error_cases(mock_get_store, mock_config_items, mock_KeyProvider, tmp_path):
     # Create a mock config value object
     mock_config_value = MagicMock()
     mock_config_value.value = str(tmp_path / "dummy.sec")
-    mock_config_values.get.return_value = mock_config_value
+    mock_config_items.get.return_value = mock_config_value
 
     # KeyProvider just returns a dummy object
     mock_KeyProvider.return_value = object()

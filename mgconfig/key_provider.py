@@ -4,7 +4,7 @@
 from mgconfig.keystores import KeyStores
 from mgconfig.helpers import ConfigKeyMap, SEC
 from typing import Any, Dict
-from .config_values import config_values
+from .config_items import config_items
 
 
 class Key:
@@ -118,7 +118,7 @@ class KeyProvider:
                     f'Cannot find valid configuration for key {key_name}.')
 
     def _get_value(self, key_name, sub_tag: str):
-            value_obj = config_values.get(
+            value_obj = config_items.get(
                 key_config[key_name][sub_tag].id)
             if value_obj:
                 return value_obj.value

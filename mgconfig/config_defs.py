@@ -23,7 +23,7 @@ from .extension_system import DefaultFunctions, DefaultValues
 import keyword
 from pathlib import Path
 from enum import Enum
-from .helpers import SingletonMeta
+from .singleton_meta import SingletonMeta
 
 CONFIG_PREFIX = 'config'
 
@@ -242,10 +242,11 @@ class ConfigDefs(metaclass=SingletonMeta):
         Raises:
             ValueError: If YAML format is invalid or definitions are duplicated.
         """
-        if hasattr(self, "_initialized"):  # avoid re-initializing
-            return
+        if self._initialized:
+            return  # avoid re-initializing
+        self._initialized = True
 
-        self.cfg_defs = {}
+        self.items = {}
 
         if isinstance(cfg_defs_filepaths, (str, Path)):
             cfg_defs_filepaths = [cfg_defs_filepaths]
@@ -255,8 +256,7 @@ class ConfigDefs(metaclass=SingletonMeta):
             if not isinstance(cfg_def_data, list):
                 raise ValueError(
                     f"Invalid config format in {path}, expected a list.")
-            self._parse_config_defs_data(cfg_def_data, self.cfg_defs)
-        self._initialized = True
+            self._parse_config_defs_data(cfg_def_data, self.items)
 
     def _parse_config_defs_data(self, config_defs_data: list, config_def_dict: dict) -> list:
         """Parse raw config definitions from YAML into ConfigDef instances.
@@ -346,7 +346,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         Returns:
             ConfigDef: The corresponding configuration definition.
         """
-        return self.cfg_defs[key]
+        return self.items[key]
 
     def __setitem__(self, key: str, value: ConfigDef) -> None:
         """Assign a ConfigDef by its config_id.
@@ -355,7 +355,7 @@ class ConfigDefs(metaclass=SingletonMeta):
             key (str): The config_id.
             value (ConfigDef): The configuration definition to store.
         """
-        self.cfg_defs[key] = value
+        self.items[key] = value
 
     def __delitem__(self, key: str) -> None:
         """Delete a ConfigDef by its config_id.
@@ -363,7 +363,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         Args:
             key (str): The config_id to delete.
         """
-        del self.cfg_defs[key]
+        del self.items[key]
 
     def __contains__(self, key: str) -> bool:
         """Check if a ConfigDef exists for the given config_id.
@@ -374,7 +374,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         Returns:
             bool: True if present, False otherwise.
         """
-        return key in self.cfg_defs
+        return key in self.items
 
     def keys(self) -> list:
         """Return all config_ids.
@@ -382,7 +382,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         Returns:
             list: A list-like view of all config_ids.
         """
-        return self.cfg_defs.keys()
+        return self.items.keys()
 
     def values(self) -> list:
         """Return all ConfigDef values.
@@ -390,7 +390,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         Returns:
             list: A list-like view of all ConfigDef values.
         """
-        return self.cfg_defs.values()
+        return self.items.values()
 
     def items(self) -> dict:
         """Return all (config_id, ConfigDef) pairs.
@@ -398,7 +398,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         Returns:
             dict: A dictionary-like view of config_id to ConfigDef mappings.
         """
-        return self.cfg_defs.items()
+        return self.items.items()
 
     def __iter__(self) -> Iterator:
         """Iterate over config_ids in the collection.
@@ -406,7 +406,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         Returns:
             Iterator: An iterator over config_ids.
         """
-        return iter(self.cfg_defs)
+        return iter(self.items)
 
     def __len__(self) -> int:
         """Return the number of config definitions.
@@ -414,7 +414,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         Returns:
             int: The number of entries in the collection.
         """
-        return len(self.cfg_defs)
+        return len(self.items)
 
     def get(self, key: str, default=None) -> ConfigDef:
         """Retrieve a ConfigDef by key with a default fallback.
@@ -426,8 +426,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         Returns:
             ConfigDef | Any: The ConfigDef instance or the provided default.
         """
-        return self.cfg_defs.get(key, default)
-
+        return self.items.get(key, default)
 
     def cfg_def_property(self, item_id: str, property_name: str) -> Optional[str]:
         """Retrieves a configuration definition property for an item.

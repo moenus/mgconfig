@@ -8,13 +8,16 @@ from mgconfig.secure_store_helpers import generate_key_str
 from tests.quicktests.t_helpers import get_test_filepath, prepare_clean_basedir
 import keyring
 import os
+from dataclasses import dataclass
 
+from mgconfig.config_items import config_items, ConfigItem
 
-from mgconfig.config_values import config_values, ConfigValue
+@dataclass
+class Dummy:
+    pass
 
-
-config_values.set( "sec_master_key_keystore", ConfigValue(None,'env','source'))
-config_values.set( "sec_master_key_item_name", ConfigValue(None,'APP_KEY','source'))
+config_items.set( "sec_master_key_keystore", ConfigItem(Dummy(),'env','source'))
+config_items.set( "sec_master_key_item_name", ConfigItem(Dummy(),'APP_KEY','source'))
 
 
 KEYFILE = get_test_filepath("secure_keyfile.json")

@@ -70,3 +70,7 @@ Salt
 - Generated **once during application installation**.
 - Must remain **unchanged across application updates** to ensure encrypted values remain decryptable
 
+Known Bugs and Limitations
+--------------------------
+
+- The implementation is not resistant to memory forensics.

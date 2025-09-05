@@ -2,7 +2,7 @@ Usage Tips and Hints
 ====================
 
 - The order of the configuration definitions within the configuration definion files and the order of the files (when working with multiple configuration definion files) is important. 
-  The dafault reference resoulution requires that the referenced configuration item was evaluated before.
+  The default reference resolution requires that the referenced configuration item was evaluated before.
 
 - A section prefix can be used for multiple sections. The config_id ([section_prefix]_[config_name]) must be unique. 
 

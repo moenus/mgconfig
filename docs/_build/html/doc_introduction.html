@@ -14,7 +14,7 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=fde8e45a"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -96,8 +96,8 @@
 <li><p>Environment variable overrides</p></li>
 <li><p>Strongly typed parsing, validation, and display</p></li>
 <li><p>Hierarchical sections and namespace prefixes for avoiding collisions</p></li>
-<li><p>Programmatic API for setting defaults</p></li>
-<li><p>Extensible with custom default functions</p></li>
+<li><p>Programmatic API for changing configuration settings</p></li>
+<li><p>Extensible with custom defaults, default functions, custom types, etc.</p></li>
 </ul>
 </section>
 <section id="configuration-types">
@@ -116,7 +116,7 @@
 A value can only be None, if there is no default and the value was not set in the environment variables or one of the above mentiioned files.</p>
 </li>
 <li><p>The package is not thread-safe.</p>
-<p>As configuration values should be determined only once at application startup and setting values is assumed to happen not verry often, this might be acceptable for most use cases.
+<p>As configuration values should be determined only once at application startup and changing configuration values is assumed to happen not very often, this might be acceptable for most use cases.
 If you need thread-safety it needs to be applied as a wrapper around the used mgconfig objects.</p>
 </li>
 </ul>
@@ -133,7 +133,7 @@ If you need thread-safety it needs to be applied as a wrapper around the used mg
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Michael Gross.</p>
+    <p>&#169; Copyright 2025, Moenus.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

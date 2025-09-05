@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from .helpers import ConfigKeyMap, config_logger, SEC
 from typing import Any, Dict, Optional
-from .config_values import config_values
+from .config_items import config_items
 
 config_keyfile = ConfigKeyMap(SEC, 'keyfile_filepath')
 config_service_name = ConfigKeyMap(SEC, 'keyring_service_name')
@@ -87,7 +87,7 @@ class KeyStore:
 
         for config_key_map in self.mandatory_confs:
 
-            config_value = config_values.get(config_key_map.id)
+            config_value = config_items.get(config_key_map.id)
             if config_value is None:
                 raise ValueError(
                     f'Configuration ID {config_key_map.id} for keystore {self.keystore_name} not found.')

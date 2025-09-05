@@ -10,6 +10,7 @@ DISPLAY_FUNC = 'disp_fn'
 OUTPUT_FUNC = 'out_fn'
 VALUE_CLASS = 'class'
 
+SECRET_TYPE = 'secret'
 
 class ConfigTypes():
     _config_types = {}

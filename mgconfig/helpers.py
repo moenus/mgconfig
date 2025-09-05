@@ -8,7 +8,6 @@ from enum import Enum
 
 LOGGER_NAME = "mgconf"
 
-
 # ------------------------------------------------------------------------------------------------------------
 # ConstConfig, lazy_build_config_id and pseudo constants
 # ------------------------------------------------------------------------------------------------------------
@@ -114,56 +113,3 @@ class LoggerWrapper:
 
 
 config_logger = LoggerWrapper()
-
-# ------------------------------------------------------------------------------------------------------------
-# SingletonMeta
-# ------------------------------------------------------------------------------------------------------------
-
-
-class SingletonMeta(type):
-    """Thread-safe metaclass for implementing the Singleton pattern."""
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        """Return the singleton instance, creating it if necessary.
-
-        Args:
-            *args: Positional arguments for instance initialization.
-            **kwargs: Keyword arguments for instance initialization.
-
-        Returns:
-            object: Singleton instance of the class.
-        """
-        # attach a per-class lock lazily
-        lock = getattr(cls, "_lock", None)
-        if lock is None:
-            lock = threading.RLock()
-            setattr(cls, "_lock", lock)
-
-        if cls in SingletonMeta._instances:
-            return SingletonMeta._instances[cls]
-
-        with lock:
-            # double-check inside lock
-            if cls in SingletonMeta._instances:
-                return SingletonMeta._instances[cls]
-
-            # 🔑 Create instance *outside the lock* to avoid deadlocks
-            instance = super().__call__(*args, **kwargs)
-
-            SingletonMeta._instances[cls] = instance
-            return instance
-
-    def reset_instance(cls) -> None:
-        """Reset the singleton instance for this class.
-
-        Removes the instance from the registry, so a new one will be created
-        on the next instantiation.
-        """
-        """Reset the singleton instance for this class."""
-        lock = getattr(cls, "_lock", None)
-        if lock is None:
-            return
-        with lock:
-            if cls in SingletonMeta._instances:
-                del SingletonMeta._instances[cls]

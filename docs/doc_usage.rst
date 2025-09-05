@@ -6,40 +6,40 @@ This guide shows how to use the **mgconfig** package in your project.
 Basic Example
 -------------
 
-Import the configuration module and load a configuration file:
+Prepare a file with configuration definitions (e.g. "basic_example.yaml").
 
-.. code-block:: python
+.. literalinclude:: ../config_defs/basic_example.yaml
+   :language: YAML
+   :linenos:
+   :lines: 4-9
 
-    from mgconfig.configuration import Config
+Import the configuration module and load the prepared configuration definition file:
 
-    # Load configuration from a file
-    config = Config("settings.yaml")
-
-    # Access configuration values
-    db_host = config.get("database.host")
-    print(f"Database host: {db_host}")
+.. literalinclude:: ../example_usage/basic_example.py
+   :language: python
+   :linenos:
+   :lines: 4-15
 
 
 Advanced Usage
 --------------
 
 - **Overriding configuration** from environment variables
-- **Merging multiple configuration files**
-- **Validating configuration** before use
+- **Merging multiple configuration definition files**
 
 Example with environment override:
 
 .. code-block:: python
 
     import os
-    from mgconfig.configuration import Config
+    from mgconfig import Configuration
 
     os.environ["DATABASE_HOST"] = "localhost"
-    config = Config("settings.yaml", env_prefix="DATABASE_")
+    config = Configuration("settings.yaml")
 
-    print(config.get("host"))
+    print(config.get("database_host"))
 
 Further Reading
 ---------------
 
-See the :doc:`api` section for the full API reference.
+See the :doc:`doc_api` section for the full API reference.

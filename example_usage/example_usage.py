@@ -24,5 +24,7 @@ config = Configuration(CONFIG_DEFINITIONS_YAML)
 # test output
 # ---------------------------------------------------------------------
 print(ConfigTypes.list_all())
+key_order = ['config_id', 'config_type',  'readonly_flag', 'config_env',
+             'config_default', 'source_str',  'value_str']
 for row in config.data_rows:
-    print(row)
+    print([row[k] for k in key_order])

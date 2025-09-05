@@ -14,7 +14,7 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=fde8e45a"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -53,6 +53,7 @@
 <li class="toctree-l1"><a class="reference internal" href="doc_api.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_config_definition.html">Configuration Definition</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_tips_and_hints.html">Usage Tips and Hints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_glossary.html">Glossary</a></li>
 </ul>
 
         </div>
@@ -81,77 +82,36 @@
              
   <section id="usage-example">
 <h1>Usage example<a class="headerlink" href="#usage-example" title="Link to this heading"></a></h1>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">mgconfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">DefaultValues</span><span class="p">,</span> <span class="n">PostProcessing</span><span class="p">,</span> <span class="n">DefaultFunctions</span><span class="p">,</span> <span class="n">ConfigTypes</span><span class="p">,</span> <span class="n">configuration_logger</span>
-<span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">ext_default_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_hostname</span><span class="p">,</span> <span class="n">default_timezone</span>
-<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">ext_postprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">extend_timezone_configuration</span><span class="p">,</span> <span class="n">LOCAL_TZ_ID</span>
-<span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">ext_config_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_filename</span>
-<span class="linenos"> 5</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="linenos"> 6</span><span class="kn">from</span><span class="w"> </span><span class="nn">ext_app_header</span><span class="w"> </span><span class="kn">import</span> <span class="n">AppHeader</span>
-<span class="linenos"> 7</span>
-<span class="linenos"> 8</span><span class="n">CONFIG_DEFINITIONS_YAML</span> <span class="o">=</span> <span class="p">[</span>
-<span class="linenos"> 9</span>    <span class="s2">&quot;config_defs/config_def__app.yml&quot;</span><span class="p">,</span>
-<span class="linenos">10</span>    <span class="s2">&quot;config_defs/config_def__example.yml&quot;</span>
-<span class="linenos">11</span><span class="p">]</span>
-<span class="linenos">12</span>
-<span class="linenos">13</span>
-<span class="linenos">14</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">15</span><span class="c1"># configuration types extensions - example</span>
-<span class="linenos">16</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">17</span><span class="n">ConfigTypes</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;minutes&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span>
-<span class="linenos">18</span>                     <span class="n">ConfigTypes</span><span class="o">.</span><span class="n">_parse_int_positive</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-<span class="linenos">19</span><span class="n">ConfigTypes</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;seconds&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span>
-<span class="linenos">20</span>                     <span class="n">ConfigTypes</span><span class="o">.</span><span class="n">_parse_int_positive</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-<span class="linenos">21</span><span class="n">ConfigTypes</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parse_filename</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Copyright (c) 2025 moenus</span>
+<span class="linenos"> 2</span><span class="c1"># SPDX-License-Identifier: MIT</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">mgconfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigTypes</span><span class="p">,</span> <span class="n">DefaultValues</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="n">CONFIG_DEFINITIONS_YAML</span> <span class="o">=</span> <span class="p">[</span>
+<span class="linenos"> 8</span>    <span class="s2">&quot;config_defs/config_def__app.yml&quot;</span><span class="p">,</span>
+<span class="linenos"> 9</span>    <span class="s2">&quot;config_defs/config_def__example.yml&quot;</span>
+<span class="linenos">10</span><span class="p">]</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">13</span><span class="c1"># # default values - example</span>
+<span class="linenos">14</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">15</span><span class="n">DefaultValues</span><span class="p">()</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="linenos">16</span><span class="n">DefaultValues</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;app_name&#39;</span><span class="p">,</span> <span class="s1">&#39;appname&#39;</span><span class="p">)</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="c1"># ---------------------------------------------------------------------</span>
+<span class="linenos">19</span><span class="c1"># configuration item value creation</span>
+<span class="linenos">20</span><span class="c1"># ---------------------------------------------------------------------</span>
+<span class="linenos">21</span><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="n">CONFIG_DEFINITIONS_YAML</span><span class="p">)</span>
 <span class="linenos">22</span>
-<span class="linenos">23</span>
-<span class="linenos">24</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">25</span><span class="c1"># application logger example</span>
-<span class="linenos">26</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">27</span><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
-<span class="linenos">28</span><span class="n">app_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;example_usage&quot;</span><span class="p">)</span>
-<span class="linenos">29</span><span class="n">configuration_logger</span><span class="o">.</span><span class="n">replace_logger</span><span class="p">(</span><span class="n">app_logger</span><span class="p">)</span>
-<span class="linenos">30</span>
-<span class="linenos">31</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">32</span><span class="c1"># default values - example</span>
-<span class="linenos">33</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">34</span><span class="n">DefaultValues</span><span class="p">()</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-<span class="linenos">35</span>
-<span class="linenos">36</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">37</span><span class="c1"># default functions - example</span>
-<span class="linenos">38</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">39</span><span class="n">DefaultFunctions</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;hostname&#39;</span><span class="p">,</span> <span class="n">default_hostname</span><span class="p">)</span>
-<span class="linenos">40</span><span class="n">DefaultFunctions</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;timezone&#39;</span><span class="p">,</span> <span class="n">default_timezone</span><span class="p">)</span>
-<span class="linenos">41</span>
-<span class="linenos">42</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">43</span><span class="c1"># post-processing - example</span>
-<span class="linenos">44</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">45</span><span class="n">PostProcessing</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">extend_timezone_configuration</span><span class="p">)</span>
-<span class="linenos">46</span>
-<span class="linenos">47</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">48</span><span class="c1"># application header values - example</span>
-<span class="linenos">49</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">50</span><span class="n">AppHeader</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;testapp&#39;</span>
-<span class="linenos">51</span><span class="n">AppHeader</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Application Title&#39;</span>
-<span class="linenos">52</span><span class="n">AppHeader</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;app&#39;</span>
-<span class="linenos">53</span><span class="n">AppHeader</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="s1">&#39;V1.0&#39;</span>
-<span class="linenos">54</span>
-<span class="linenos">55</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">56</span><span class="c1"># configuration item value creation</span>
-<span class="linenos">57</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">58</span><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="n">CONFIG_DEFINITIONS_YAML</span><span class="p">)</span>
-<span class="linenos">59</span>
-<span class="linenos">60</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">61</span><span class="c1"># checking specific post-processing results</span>
-<span class="linenos">62</span><span class="c1"># ---------------------------------------------------------------------</span>
-<span class="linenos">63</span><span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">extended_item_exists</span><span class="p">(</span><span class="n">LOCAL_TZ_ID</span><span class="p">):</span>
-<span class="linenos">64</span>    <span class="n">app_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-<span class="linenos">65</span>        <span class="sa">f</span><span class="s1">&#39;Local timezone: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">get_extended_item</span><span class="p">(</span><span class="n">LOCAL_TZ_ID</span><span class="p">)</span><span class="o">.</span><span class="n">zone</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="linenos">66</span>    <span class="c1"># value of &#39;local_tz&#39; can be directly accessed as property using config.extended.local_tz</span>
-<span class="linenos">67</span><span class="k">else</span><span class="p">:</span>
-<span class="linenos">68</span>    <span class="n">app_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-<span class="linenos">69</span>        <span class="sa">f</span><span class="s1">&#39;Configuration value for &quot;</span><span class="si">{</span><span class="n">LOCAL_TZ_ID</span><span class="si">}</span><span class="s1">&quot; was not found.&#39;</span><span class="p">)</span>
-<span class="linenos">70</span>
-<span class="linenos">71</span><span class="nb">print</span><span class="p">(</span><span class="n">ConfigTypes</span><span class="o">.</span><span class="n">list_all</span><span class="p">())</span>
+<span class="linenos">23</span><span class="c1"># ---------------------------------------------------------------------</span>
+<span class="linenos">24</span><span class="c1"># test output</span>
+<span class="linenos">25</span><span class="c1"># ---------------------------------------------------------------------</span>
+<span class="linenos">26</span><span class="nb">print</span><span class="p">(</span><span class="n">ConfigTypes</span><span class="o">.</span><span class="n">list_all</span><span class="p">())</span>
+<span class="linenos">27</span><span class="n">key_order</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;config_id&#39;</span><span class="p">,</span> <span class="s1">&#39;config_type&#39;</span><span class="p">,</span>  <span class="s1">&#39;readonly_flag&#39;</span><span class="p">,</span> <span class="s1">&#39;config_env&#39;</span><span class="p">,</span>
+<span class="linenos">28</span>             <span class="s1">&#39;config_default&#39;</span><span class="p">,</span> <span class="s1">&#39;source_str&#39;</span><span class="p">,</span>  <span class="s1">&#39;value_str&#39;</span><span class="p">]</span>
+<span class="linenos">29</span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">data_rows</span><span class="p">:</span>
+<span class="linenos">30</span>    <span class="nb">print</span><span class="p">([</span><span class="n">row</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key_order</span><span class="p">])</span>
 </pre></div>
 </div>
 </section>
@@ -167,7 +127,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Michael Gross.</p>
+    <p>&#169; Copyright 2025, Moenus.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

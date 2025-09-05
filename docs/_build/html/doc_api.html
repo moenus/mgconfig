@@ -14,12 +14,12 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=fde8e45a"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Configuration YAML Overview" href="doc_configuration_yaml.html" />
+    <link rel="next" title="Configuration Definition" href="doc_config_definition.html" />
     <link rel="prev" title="Security Considerations" href="doc_secure_store.html" /> 
 </head>
 
@@ -44,25 +44,27 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="doc_introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_introduction.html#known-bugs-and-limitations">Known Bugs and Limitations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_example_usage.html">Usage example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_secure_store.html">Security Considerations</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#mgconfig.configuration.Configuration"><code class="docutils literal notranslate"><span class="pre">Configuration</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.data_rows"><code class="docutils literal notranslate"><span class="pre">Configuration.data_rows</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.extended_item_exists"><code class="docutils literal notranslate"><span class="pre">Configuration.extended_item_exists()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.get"><code class="docutils literal notranslate"><span class="pre">Configuration.get()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.get_cfg_def"><code class="docutils literal notranslate"><span class="pre">Configuration.get_cfg_def()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.get_config_value"><code class="docutils literal notranslate"><span class="pre">Configuration.get_config_value()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.get_extended_item"><code class="docutils literal notranslate"><span class="pre">Configuration.get_extended_item()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.get_new_masterkey"><code class="docutils literal notranslate"><span class="pre">Configuration.get_new_masterkey()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.get_config_item"><code class="docutils literal notranslate"><span class="pre">Configuration.get_config_item()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.get_value"><code class="docutils literal notranslate"><span class="pre">Configuration.get_value()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.save_new_value"><code class="docutils literal notranslate"><span class="pre">Configuration.save_new_value()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.set_extended_item"><code class="docutils literal notranslate"><span class="pre">Configuration.set_extended_item()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.set_property_value"><code class="docutils literal notranslate"><span class="pre">Configuration.set_property_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mgconfig.configuration.Configuration.to_dict"><code class="docutils literal notranslate"><span class="pre">Configuration.to_dict()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="doc_configuration_yaml.html">Configuration YAML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_config_definition.html">Configuration Definition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_tips_and_hints.html">Usage Tips and Hints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_glossary.html">Glossary</a></li>
 </ul>
 
         </div>
@@ -93,28 +95,93 @@
 <span id="api-reference"></span><h1>API Reference<a class="headerlink" href="#module-mgconfig.configuration" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="mgconfig.configuration.Configuration">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgconfig.configuration.</span></span><span class="sig-name descname"><span class="pre">Configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg_defs_filepaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgconfig.configuration.</span></span><span class="sig-name descname"><span class="pre">Configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>this class reperesents the configuration values which are defined in
-environment variables and a json configuration file.
-If a value is not found in these sources a default value from cfg_defs is used.</p>
+<p>Singleton representing application configuration values.</p>
+<p>Configuration values are loaded from environment variables and JSON configuration
+files. If a value is not found in these sources, a default from the configuration
+definitions is used. Configuration items are accessible via attribute-style access
+or dictionary-like access.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="mgconfig.configuration.Configuration.data_rows">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mgconfig.configuration.Configuration.data_rows" title="Link to this definition"></a></dt>
-<dd><p>Return all configuration values and their metadata as rows for table display.
-Includes both current and pending (new) values.</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mgconfig.configuration.Configuration.data_rows" title="Link to this definition"></a></dt>
+<dd><p>Return all configuration values and their metadata as rows.</p>
+<p>Each row contains metadata and the current value of a configuration item.
+If a pending new value exists, it is included as a separate row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of dictionaries representing configuration items.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[Dict[str, Any]]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.extended_item_exists">
-<span class="sig-name descname"><span class="pre">extended_item_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.extended_item_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.extended_item_exists" title="Link to this definition"></a></dt>
-<dd><p>Check if an attribute exists in the extended object.</p>
+<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get_config_item">
+<span class="sig-name descname"><span class="pre">get_config_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fail_on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConfigItem</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_config_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_config_item" title="Link to this definition"></a></dt>
+<dd><p>Retrieve the ConfigItem object associated with a configuration ID.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the attribute to check.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_id</strong> (<em>str</em>) – The configuration identifier.</p></li>
+<li><p><strong>fail_on_error</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to raise an error if the item is
+not found. Defaults to True.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>True if the attribute exists, False otherwise.</p>
+<dd class="field-even"><p>The ConfigItem object if found, or None if <cite>fail_on_error</cite> is False.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[ConfigItem]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the configuration ID is not found and <cite>fail_on_error</cite> is True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get_value">
+<span class="sig-name descname"><span class="pre">get_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fail_on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_value" title="Link to this definition"></a></dt>
+<dd><p>Retrieve the current value of a configuration item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_id</strong> (<em>str</em>) – The configuration identifier.</p></li>
+<li><p><strong>fail_on_error</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to raise an error if the
+value is not found. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The configuration value, or None if not found and <cite>fail_on_error</cite> is False.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the configuration ID is not found and <cite>fail_on_error</cite> is True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.save_new_value">
+<span class="sig-name descname"><span class="pre">save_new_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_immediately</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.save_new_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.save_new_value" title="Link to this definition"></a></dt>
+<dd><p>Save a new configuration value to the underlying store.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_id</strong> (<em>str</em>) – The configuration identifier.</p></li>
+<li><p><strong>new_value</strong> (<em>Any</em>) – The new value to save.</p></li>
+<li><p><strong>apply_immediately</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply the value immediately
+to the current instance. Defaults to False. Values of secret type
+are always applied immediately.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the value was saved successfully, False otherwise.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
@@ -123,73 +190,29 @@ Includes both current and pending (new) values.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fail_on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get" title="Link to this definition"></a></dt>
-<dd><p>Get the current value for a configuration ID.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get_cfg_def">
-<span class="sig-name descname"><span class="pre">get_cfg_def</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fail_on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConfigDef</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_cfg_def"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_cfg_def" title="Link to this definition"></a></dt>
-<dd><p>Get the configuration definition for a configuration ID.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get_config_value">
-<span class="sig-name descname"><span class="pre">get_config_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fail_on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConfigValue</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_config_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_config_value" title="Link to this definition"></a></dt>
-<dd><p>Get the ConfigValue object for a configuration ID.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get_extended_item">
-<span class="sig-name descname"><span class="pre">get_extended_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_extended_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_extended_item" title="Link to this definition"></a></dt>
-<dd><p>Retrieve the value of an attribute from the extended object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the attribute to retrieve.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The value of the attribute if it exists, otherwise None.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Any</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.get_new_masterkey">
-<span class="sig-name descname"><span class="pre">get_new_masterkey</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.get_new_masterkey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.get_new_masterkey" title="Link to this definition"></a></dt>
-<dd><p>Prepare a new master key from the secure value store.
-This method interacts with the secure value store to generate
-and return a fresh master key.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A newly generated master key.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.save_new_value">
-<span class="sig-name descname"><span class="pre">save_new_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_immediately</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.save_new_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.save_new_value" title="Link to this definition"></a></dt>
-<dd><p>Save a new configuration value to the appropriate store.
-Optionally apply it immediately in the current instance.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.set_extended_item">
-<span class="sig-name descname"><span class="pre">set_extended_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.set_extended_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.set_extended_item" title="Link to this definition"></a></dt>
-<dd><p>Set or add an attribute to the extended object.</p>
+<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.set_property_value">
+<span class="sig-name descname"><span class="pre">set_property_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.set_property_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.set_property_value" title="Link to this definition"></a></dt>
+<dd><p>Set or add a configuration value in the internal namespace.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – The name of the attribute to set.</p></li>
-<li><p><strong>value</strong> (<em>Any</em>) – The value to assign to the attribute.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The configuration identifier.</p></li>
+<li><p><strong>value</strong> (<em>Any</em>) – The value to assign.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgconfig.configuration.Configuration.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/mgconfig/configuration.html#Configuration.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgconfig.configuration.Configuration.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Return a dictionary of all current configuration values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary mapping configuration IDs to their current values.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mapping[str, Any]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -203,13 +226,13 @@ Optionally apply it immediately in the current instance.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="doc_secure_store.html" class="btn btn-neutral float-left" title="Security Considerations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="doc_configuration_yaml.html" class="btn btn-neutral float-right" title="Configuration YAML Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="doc_config_definition.html" class="btn btn-neutral float-right" title="Configuration Definition" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Michael Gross.</p>
+    <p>&#169; Copyright 2025, Moenus.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

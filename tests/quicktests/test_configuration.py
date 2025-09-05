@@ -4,7 +4,7 @@
 from datetime import time
 from pathlib import Path
 from tests.quicktests.t_helpers import prepare_clean_basedir, create_configuration, prepare_new_env_master_key
-from mgconfig.config_values import config_values, config_values_new
+from mgconfig.config_items import config_items, config_items_new
 
 
 BASE_DIRECTORY_PATH = prepare_clean_basedir()
@@ -52,7 +52,7 @@ def test_configuration_reading():
     for key, value in test_values.items():
         assert config.get_value(key) == value
 
-    for config_value in config_values.values():
+    for config_value in config_items.values():
         if config_value.config_id in test_values:
             assert config_value.value == test_values[config_value.config_id]
 
@@ -64,18 +64,18 @@ def test_configuration_settings():
 
     for key, value in new_values.items():
         config.save_new_value(key, value)
-        assert config_values_new.get(key).value == value
+        assert config_items_new.get(key).value == value
 
     config = create_configuration()     # read in a second time with new values
 
     for key, value in new_values.items():
-        assert config_values.get(key).value == value
+        assert config_items.get(key).value == value
 
     for key, value in new_values_immediate.items():
         config.save_new_value(key, value, apply_immediately=True)
-        assert config_values_new.get(key) == None
-        assert config_values.get(key).value == value
-        assert config.__dict__[key] == value
+        assert config_items_new.get(key) == None
+        assert config_items.get(key).value == value
+        assert config._values[key] == value
 
     config = create_configuration()      # read in the saved configuration
     for key, value in new_values_immediate.items():

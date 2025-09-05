@@ -7,10 +7,10 @@ from typing import Any, Optional
 from .value_stores import ValueStoreFile, ValueStoreSecure, ValueStoreEnv, ValueStoreDefault, ConfigValueSource
 import re
 from .helpers import config_logger
-from .config_values import config_values, ConfigValue, config_values_new
+from .config_items import config_items, ConfigItem, config_items_new
 
 
-class ConfigValueHandler:
+class ConfigItemHandler:
 
     @classmethod
     def build(cls):
@@ -18,7 +18,7 @@ class ConfigValueHandler:
             cls._add_value_object(cfg_def)
 
     @classmethod
-    def _add_value_object(cls, cfg_def: ConfigDef) -> ConfigValue:
+    def _add_value_object(cls, cfg_def: ConfigDef) -> ConfigItem:
         """
         Retrieve and construct a ConfigValue object for a given definition.
 
@@ -39,7 +39,7 @@ class ConfigValueHandler:
                 value_src, source = ValueStoreDefault().retrieve_value(cfg_def.config_id)
             # expand $ variables in string values:
             if isinstance(value_src, str) and ('$' in value_src):
-                value_src = ConfigValueHandler._replace_var(value_src)
+                value_src = ConfigItemHandler._replace_var(value_src)
 
         result, parsed_value = ConfigTypes.parse_value(
             value_src, cfg_def.config_type)
@@ -48,7 +48,7 @@ class ConfigValueHandler:
         if not result:
             raise ValueError(
                 f'Config id {cfg_def.config_id}: Value {value_src} is not of config type {cfg_def.config_type}.')
-        config_values.set(cfg_def.config_id, ConfigValue(
+        config_items.set(cfg_def.config_id, ConfigItem(
             cfg_def, parsed_value, source))
 
     @staticmethod
@@ -78,12 +78,12 @@ class ConfigValueHandler:
                 raise ValueError(
                     f"Circular reference detected for variable '{var_name}'")
 
-            if var_name in config_values:
+            if var_name in config_items:
                 visited.add(var_name)
                 try:
-                    var_text = ConfigValueHandler._insertstr(var_name)
+                    var_text = ConfigItemHandler._insertstr(var_name)
                     if var_text is not None:
-                        return ConfigValueHandler._replace_var(str(var_text), visited)
+                        return ConfigItemHandler._replace_var(str(var_text), visited)
                     else:
                         return match.group(0)  # leave as-is if None
                 finally:
@@ -95,7 +95,7 @@ class ConfigValueHandler:
 
     @staticmethod
     def _insertstr(var_name):
-        config_value = config_values.get(var_name)
+        config_value = config_items.get(var_name)
         if config_value is not None:
             cfg_def = ConfigDefs().get(var_name)
             return ConfigTypes.output_value(config_value.value, cfg_def.config_type)
@@ -122,19 +122,19 @@ class ConfigValueHandler:
                 config_id, output)
             source = ConfigValueSource.CFGFILE
             config_logger.info(
-                f'Configuration [{config_id}]: value was changed from [{config_values.get(config_id)}] to [{new_value}]')
+                f'Configuration [{config_id}]: value was changed from [{config_items.get(config_id)}] to [{new_value}]')
         if apply_immediately:
-            config_values.set(config_id, ConfigValue(
+            config_items.set(config_id, ConfigItem(
                 cfg_def, new_value, source))
-            if config_id in config_values_new:
-                del config_values_new[config_id]
+            if config_id in config_items_new:
+                del config_items_new[config_id]
         else:
-            config_values_new.set(
-                config_id, ConfigValue(cfg_def, new_value, source))
+            config_items_new.set(
+                config_id, ConfigItem(cfg_def, new_value, source, new=True))
 
         return True
 
     @staticmethod
     def reset_values():
-        config_values.clear()
-        config_values_new.clear()
+        config_items.clear()
+        config_items_new.clear()

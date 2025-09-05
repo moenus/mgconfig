@@ -1,0 +1,10 @@
+# mgconfig configuration definitions 
+# for basic usage example
+
+- section: application
+  prefix: app
+  configs:
+  - name: test
+    type: str
+    default: teststring
+    description: this configuration is used to demonstrate the basic usage of mgconfig

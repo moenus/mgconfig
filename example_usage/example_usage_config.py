@@ -10,7 +10,7 @@ from mgconfig import Configuration, DefaultValues
 from mgconfig.config_defs import ConfigDefs
 from mgconfig.config_types import ConfigTypes
 from mgconfig.secure_store_helpers import generate_key_str
-from mgconfig.config_values import config_values, config_values_new
+from mgconfig.config_items import config_items, config_items_new
 
 
 CONFIG_DEFINITIONS_YAML = [
@@ -78,7 +78,7 @@ def configuration_reading():
     for key, value in test_values.items():
         assert config.get_value(key) == value
 
-    for config_value in config_values.values():
+    for config_value in config_items.values():
         if config_value.config_id in test_values:
             assert config_value.value == test_values[config_value.config_id]
 
@@ -88,17 +88,17 @@ def configuration_changes():
 
     for key, value in new_values.items():
         config.save_new_value(key, value)
-        assert config_values_new.get(key).value == value
+        assert config_items_new.get(key).value == value
 
     config = create_configuration()     # read in a second time with new values
 
     for key, value in new_values.items():
-        assert config_values.get(key).value == value
+        assert config_items.get(key).value == value
 
     for key, value in new_values_immediate.items():
         config.save_new_value(key, value, apply_immediately=True)
-        assert config_values_new.get(key) == None
-        assert config_values.get(key).value == value
+        assert config_items_new.get(key) == None
+        assert config_items.get(key).value == value
         assert config.__dict__[key] == value
 
     config = create_configuration()      # read in the saved configuration
@@ -121,7 +121,7 @@ def configuration_values_print():
     for config_def in ConfigDefs().values():
         id = config_def.config_id
         val_main = prep(config.__dict__.get(id))
-        val_obj = config_values.get(id)
+        val_obj = config_items.get(id)
         val_type = config_def.config_type
         if val_obj:
             # val_src = prep(val_obj.value_src)

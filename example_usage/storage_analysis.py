@@ -4,7 +4,7 @@
 import tracemalloc
 from mgconfig import Configuration, DefaultValues
 from mgconfig.config_defs import ConfigDefs
-from mgconfig.config_value_handler import ConfigValueHandler
+from mgconfig.config_item_handler import ConfigItemHandler
 import gc
 import sys
 from collections import Counter
@@ -76,7 +76,7 @@ ConfigDefs(CONFIG_DEFINITIONS_YAML)
 track_mem("CDef  :")
 
 
-ConfigValueHandler.build()
+ConfigItemHandler.build()
 count_objs(["ConfigDef", "ConfigDefs", "ConfigValue"])
 
 
@@ -93,7 +93,7 @@ show_references(config)
 print(f'{('-'*60)} Configuration.reset_instance()')
 del config
 Configuration.reset_instance()
-ConfigValueHandler.reset_values()
+ConfigItemHandler.reset_values()
 ConfigDefs.reset_instance()
 track_mem("Reset: ")
 

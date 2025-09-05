@@ -11,8 +11,8 @@ Features
 - Environment variable overrides
 - Strongly typed parsing, validation, and display
 - Hierarchical sections and namespace prefixes for avoiding collisions
-- Programmatic API for setting defaults
-- Extensible with custom default functions
+- Programmatic API for changing configuration settings
+- Extensible with custom defaults, default functions, custom types, etc.
 
 .. _config_types:
 
@@ -39,5 +39,5 @@ Known Bugs and Limitations
 
 - The package is not thread-safe.
 
-  As configuration values should be determined only once at application startup and setting values is assumed to happen not verry often, this might be acceptable for most use cases. 
+  As configuration values should be determined only once at application startup and changing configuration values is assumed to happen not very often, this might be acceptable for most use cases. 
   If you need thread-safety it needs to be applied as a wrapper around the used mgconfig objects. 

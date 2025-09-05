@@ -65,8 +65,8 @@ def test_parse_config_defs_success(tmp_path, mock_defaults):
 
     cfg = ConfigDefs(yaml_path)
     expected_config_id = "prefix_name"  # Matches section_prefix_name pattern
-    assert expected_config_id in cfg.cfg_defs
-    cfg_def = cfg.cfg_defs[expected_config_id]
+    assert expected_config_id in cfg.items
+    cfg_def = cfg.items[expected_config_id]
     assert isinstance(cfg_def, ConfigDef)
     assert cfg_def.config_default == "val_default"  # comes from mock_vals.dict
 
@@ -79,7 +79,7 @@ def test_parse_with_default_values(tmp_path, mock_defaults):
     yaml_path.write_text(yaml.safe_dump(data), encoding="utf-8")
 
     cfg = ConfigDefs(yaml_path)
-    assert cfg.cfg_defs["prefix_name"].config_default == "val_default"
+    assert cfg.items["prefix_name"].config_default == "val_default"
 
 
 def test_invalid_yaml_structure(tmp_path):

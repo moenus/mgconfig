@@ -12,7 +12,7 @@ def test_create_config_defs():
 
     default_values = DefaultValues().dict
 
-    cfg_defs = ConfigDefs(CONFIG_DEFINITIONS_YAML).cfg_defs
+    cfg_defs = ConfigDefs(CONFIG_DEFINITIONS_YAML).items
 
     counter_default_values = 0
     counter_default_function_values = 0

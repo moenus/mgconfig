@@ -14,12 +14,12 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=fde8e45a"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Security Considerations" href="doc_secure_store.html" />
+    <link rel="next" title="Usage example" href="doc_example_usage.html" />
     <link rel="prev" title="Installation" href="doc_installation.html" /> 
 </head>
 
@@ -44,6 +44,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="doc_introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_introduction.html#known-bugs-and-limitations">Known Bugs and Limitations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basic-example">Basic Example</a></li>
@@ -51,8 +53,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#further-reading">Further Reading</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="doc_example_usage.html">Usage example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_secure_store.html">Security Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_config_definition.html">Configuration Definition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_tips_and_hints.html">Usage Tips and Hints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_glossary.html">Glossary</a></li>
 </ul>
 
         </div>
@@ -84,15 +90,28 @@
 <p>This guide shows how to use the <strong>mgconfig</strong> package in your project.</p>
 <section id="basic-example">
 <h2>Basic Example<a class="headerlink" href="#basic-example" title="Link to this heading"></a></h2>
-<p>Import the configuration module and load a configuration file:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mgconfig.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
-
-<span class="c1"># Load configuration from a file</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="s2">&quot;settings.yaml&quot;</span><span class="p">)</span>
-
-<span class="c1"># Access configuration values</span>
-<span class="n">db_host</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database.host&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Database host: </span><span class="si">{</span><span class="n">db_host</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<p>Prepare a file with configuration definitions (e.g. “usage_example.yaml”).</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">section</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application</span>
+<span class="linenos">2</span><span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app</span>
+<span class="linenos">3</span><span class="w">  </span><span class="nt">configs</span><span class="p">:</span>
+<span class="linenos">4</span><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span>
+<span class="linenos">5</span><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">str</span>
+<span class="linenos">6</span><span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">teststring</span>
+</pre></div>
+</div>
+<p>Import the configuration module and load the prepared configuration definition file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># import from mgconfig</span>
+<span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">mgconfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="c1"># configuration object creation</span>
+<span class="linenos"> 5</span><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="s1">&#39;config_defs/usage_basic_example.yaml&#39;</span><span class="p">)</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="c1"># access configuration value</span>
+<span class="linenos"> 8</span><span class="n">test_value</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;app_test&quot;</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test configuration value: </span><span class="si">{</span><span class="n">test_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="c1"># alternative access posibility:</span>
+<span class="linenos">12</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test configuration value: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">app_test</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -100,17 +119,16 @@
 <h2>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p><strong>Overriding configuration</strong> from environment variables</p></li>
-<li><p><strong>Merging multiple configuration files</strong></p></li>
-<li><p><strong>Validating configuration</strong> before use</p></li>
+<li><p><strong>Merging multiple configuration definition files</strong></p></li>
 </ul>
 <p>Example with environment override:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">mgconfig.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mgconfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span>
 
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;DATABASE_HOST&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="s2">&quot;settings.yaml&quot;</span><span class="p">,</span> <span class="n">env_prefix</span><span class="o">=</span><span class="s2">&quot;DATABASE_&quot;</span><span class="p">)</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="s2">&quot;settings.yaml&quot;</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database_host&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </section>
@@ -125,13 +143,13 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="doc_installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="doc_secure_store.html" class="btn btn-neutral float-right" title="Security Considerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="doc_example_usage.html" class="btn btn-neutral float-right" title="Usage example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Michael Gross.</p>
+    <p>&#169; Copyright 2025, Moenus.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -284,28 +284,4 @@ def test_configdefs_default_from_defaultvalues(monkeypatch, tmp_path, valid_conf
     assert cfg_defs["app_port"].config_default == 123
 
 
-def test_configdefs_mapping_methods(temp_yaml_file):
-    cfg_defs = ConfigDefs(temp_yaml_file)
 
-    assert "app_port" in cfg_defs
-    assert list(cfg_defs.keys()) == ["app_port"]
-    assert isinstance(list(cfg_defs.values())[0], ConfigDef)
-    assert list(cfg_defs.items())[0][0] == "app_port"
-    assert len(cfg_defs) == 1
-
-    cfg = cfg_defs.get("app_port")
-    assert isinstance(cfg, ConfigDef)
-
-    cfg2 = ConfigDef(
-        config_id="app_debug",
-        config_type="bool",
-        config_readonly=False,
-        config_name="debug",
-        config_prefix="app",
-        config_section="general",
-        config_default=True
-    )
-    cfg_defs["app_debug"] = cfg2
-    assert "app_debug" in cfg_defs
-    del cfg_defs["app_debug"]
-    assert "app_debug" not in cfg_defs

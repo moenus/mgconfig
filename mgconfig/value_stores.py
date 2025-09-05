@@ -3,7 +3,8 @@
 
 import os
 import yaml
-from .helpers import config_logger, ConfigKeyMap, SingletonMeta, APP, SEC
+from .helpers import config_logger, ConfigKeyMap, APP, SEC
+from .singleton_meta import SingletonMeta
 from .secure_store import SecureStore
 from .key_provider import KeyProvider
 from .config_defs import CDF, ConfigDefs
@@ -11,7 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from enum import Enum
 from pathlib import Path
 from abc import abstractmethod
-from .config_values import config_values
+from .config_items import config_items
 
 
 config_configfile = ConfigKeyMap(APP,'configfile')
@@ -42,8 +43,10 @@ class ValueStore (metaclass= SingletonMeta):
             source (ConfigValueSource): The source type of configuration values
                 (e.g., CFGFILE, ENV_VAR, DEFAULT, ENCRYPT).
         """
-        if not hasattr(self, "_source"):  # avoid re-initializing
-            self._source = source
+        if self._initialized:
+            return  # avoid re-initializing
+        self._initialized = True
+        self._source = source
 
     @abstractmethod
     def save_value(self, item_id: str, value: Any) -> bool:
@@ -85,7 +88,7 @@ class ValueStoreSecure(ValueStore):
         """Initialize a file-based secure value store for storing secret strings like passwords.
         """
         super().__init__(ConfigValueSource.ENCRYPT)
-        self.securestore_file = config_values.get(
+        self.securestore_file = config_items.get(
             config_securestorefile.id).value
         # initialize key provider with the configuration values from Configuration object
         self.key_provider = KeyProvider()
@@ -93,9 +96,9 @@ class ValueStoreSecure(ValueStore):
             secure_store = self._get_new_secure_store()
             if not secure_store.validate_master_key():
                 config_logger.info(
-                    'Master key invalid or secure store corrupted.')
+                    'Secure store corrupted or master key invalid.')
             else:
-                config_logger.info('Secure store was successfully initialized.')
+                config_logger.info('Secure store successfully initialized.')
         except Exception as e:
             config_logger.error(f'Cannot initialize secure store: {e}')
 
@@ -171,8 +174,14 @@ class ValueStoreFile(ValueStore):
 
         """
         super().__init__(ConfigValueSource.CFGFILE)
-        self.config_file = config_values.get(config_configfile.id, fail_on_error = True).value
-        self.configfile_content = self._read_configfile()
+        self.config_file = config_items.get_value(config_configfile.id)
+        if self.config_file:
+            try:
+                self.configfile_content = self._read_configfile()
+            except Exception as e:
+                self.configfile_content = {}
+        else:
+            self.configfile_content = {}
 
     def _read_configfile(self) -> dict[str, Any]:
         """Reads configuration data from the YAML config file.
@@ -183,9 +192,12 @@ class ValueStoreFile(ValueStore):
         """
         if os.path.exists(self.config_file):
             config_logger.info(f'Reading config from file "{self.config_file}"')
-            with open(self.config_file, "r") as file:
-                # Use safe_load to prevent code execution
-                return yaml.safe_load(file)
+            try:
+                with open(self.config_file, "r") as file:
+                    # Use safe_load to prevent code execution
+                    return yaml.safe_load(file)
+            except Exception as e:
+                raise ValueError(f'Config from file "{self.config_file}" could not be read: {e}')    
         else:
             config_logger.info(f'Config file "{self.config_file}" not found.')
             return {}
