@@ -3,8 +3,22 @@
 
 from mgconfig.secure_store import SecureStore
 from mgconfig.secure_store_helpers import generate_key_str
-from tests.quicktests.t_helpers import remove_file, get_test_filepath
+from pathlib import Path
+
 import os
+
+root_dir = os.path.dirname(os.path.abspath(__file__))
+test_basedir = Path(root_dir) / 'temp_basedir'
+
+
+def get_test_filepath(filename):
+    return Path(test_basedir) / filename
+
+
+def remove_file(filepath):
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
 
 DEMO_ITEM_TEXT = 'this is a password test'
 DEMO_ITEM_NAME = 'test_password'

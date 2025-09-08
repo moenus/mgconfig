@@ -6,7 +6,7 @@ from .config_defs import ConfigDefs, ConfigDef
 from typing import Any, Optional
 from .value_stores import ValueStoreFile, ValueStoreSecure, ValueStoreEnv, ValueStoreDefault, ConfigValueSource
 import re
-from .helpers import config_logger
+from .config_logger import config_logger
 from .config_items import config_items, ConfigItem, config_items_new
 
 

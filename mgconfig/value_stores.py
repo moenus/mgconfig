@@ -3,7 +3,8 @@
 
 import os
 import yaml
-from .helpers import config_logger, ConfigKeyMap, APP, SEC
+from .config_key_map import ConfigKeyMap, APP, SEC
+from .config_logger import config_logger
 from .singleton_meta import SingletonMeta
 from .secure_store import SecureStore
 from .key_provider import KeyProvider
@@ -13,10 +14,12 @@ from enum import Enum
 from pathlib import Path
 from abc import abstractmethod
 from .config_items import config_items
+from .file_cache import FileCache, FileFormat, FileMode
 
 
-config_configfile = ConfigKeyMap(APP,'configfile')
+config_configfile = ConfigKeyMap(APP, 'configfile')
 config_securestorefile = ConfigKeyMap(SEC, 'securestore_file')
+
 
 class ConfigValueSource(str, Enum):
     """Enumerates the possible configuration value sources."""
@@ -27,15 +30,15 @@ class ConfigValueSource(str, Enum):
     ENCRYPT = 'encrypt'
 
     def __str__(self) -> str:
-        return self.value    
+        return self.value
 
 
-class ValueStore (metaclass= SingletonMeta):
+class ValueStore (metaclass=SingletonMeta):
     """Abstract base class for configuration value storage backends.
 
     Subclasses must implement both `save_value` and `retrieve_value`.
     """
-    
+
     def __init__(self, source: ConfigValueSource):
         """Initializes a value store.
 
@@ -130,7 +133,8 @@ class ValueStoreSecure(ValueStore):
             config_logger.info(f'Secret {item_id} saved to keystore.')
             return True
         except Exception as e:
-            config_logger.error(f'Cannot store secret value for id {item_id}: {e}')
+            config_logger.error(
+                f'Cannot store secret value for id {item_id}: {e}')
         return False
 
     def retrieve_value(self, item_id: str) -> tuple[Any, ConfigValueSource]:
@@ -147,7 +151,8 @@ class ValueStoreSecure(ValueStore):
             secure_store = self._get_new_secure_store()
             return secure_store.retrieve_secret(item_id), self._source
         except Exception as e:
-            config_logger.error(f'Cannot retrieve secret value for id {item_id}: {e}')
+            config_logger.error(
+                f'Cannot retrieve secret value for id {item_id}: {e}')
             return None, self._source
 
     def prepare_new_masterkey(self) -> str:
@@ -162,7 +167,8 @@ class ValueStoreSecure(ValueStore):
         except Exception as e:
             config_logger.error(f'Cannot prepare new master key: {e}')
             return None
-        config_logger.info('New master key generated. Auto-key-exchange prepared.')
+        config_logger.info(
+            'New master key generated. Auto-key-exchange prepared.')
         return new_masterkey_str
 
 
@@ -174,33 +180,8 @@ class ValueStoreFile(ValueStore):
 
         """
         super().__init__(ConfigValueSource.CFGFILE)
-        self.config_file = config_items.get_value(config_configfile.id)
-        if self.config_file:
-            try:
-                self.configfile_content = self._read_configfile()
-            except Exception as e:
-                self.configfile_content = {}
-        else:
-            self.configfile_content = {}
-
-    def _read_configfile(self) -> dict[str, Any]:
-        """Reads configuration data from the YAML config file.
-
-        Returns:
-            dict: The contents of the configuration file.
-                Returns an empty dict if the file does not exist or is empty.
-        """
-        if os.path.exists(self.config_file):
-            config_logger.info(f'Reading config from file "{self.config_file}"')
-            try:
-                with open(self.config_file, "r") as file:
-                    # Use safe_load to prevent code execution
-                    return yaml.safe_load(file)
-            except Exception as e:
-                raise ValueError(f'Config from file "{self.config_file}" could not be read: {e}')    
-        else:
-            config_logger.info(f'Config file "{self.config_file}" not found.')
-            return {}
+        self.config_file = Path(config_items.get_value(config_configfile.id))
+        self.file_cache = FileCache(self.config_file, file_format=FileFormat.YAML, file_mode=FileMode.ATOMIC_WRITE)
 
     def retrieve_value(self, item_id: str) -> tuple[Any, ConfigValueSource]:
         """Retrieves a value from the YAML configuration file.
@@ -214,8 +195,9 @@ class ValueStoreFile(ValueStore):
         """
         config_section = ConfigDefs().cfg_def_property(item_id, str(CDF.SECTION))
         config_name = ConfigDefs().cfg_def_property(item_id, str(CDF.NAME))
-        if config_section in self.configfile_content and config_name in self.configfile_content[config_section]:
-            return self.configfile_content[config_section][config_name], self._source
+        data = self.file_cache.data
+        if config_section in data and config_name in data[config_section]:
+            return data[config_section][config_name], self._source
         return None, self._source
 
     def save_value(self, item_id, value) -> bool:
@@ -230,33 +212,11 @@ class ValueStoreFile(ValueStore):
         """
         config_section = ConfigDefs().cfg_def_property(item_id, str(CDF.SECTION))
         config_name = ConfigDefs().cfg_def_property(item_id, str(CDF.NAME))
-        if config_section not in self.configfile_content:
-            self.configfile_content[config_section] = {}
-        self.configfile_content[config_section][config_name] = value
-        return self._write_configfile()
-
-    def _write_configfile(self) -> bool:
-        """Writes the current configuration to the YAML file.
-
-        Returns:
-            bool: True if the file was written successfully, False otherwise.
-        """
-        config_path = Path(self.config_file)
-        try:
-            config_path.parent.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
-            config_logger.error(
-                f"Directory '{config_path}' could not be prepared: {e}.")
-            return False
-        try:
-            with open(self.config_file, "w") as file:
-                yaml.dump(self.configfile_content, file,
-                          default_flow_style=False)
-            return True
-        except Exception as e:
-            config_logger.error(
-                f"File '{self.config_file}' could not be written: {e}.")
-            return False
+        data = self.file_cache.data        
+        if config_section not in data:
+            data[config_section] = {}
+        data[config_section][config_name] = value
+        return self.file_cache.save()
 
 
 class ValueStoreEnv(ValueStore):
@@ -284,7 +244,7 @@ class ValueStoreEnv(ValueStore):
         return None, self._source
 
     def save_value(self, item_id: str, value: Any) -> bool:
-        """Raises NotImplementedError since environment variables are read-only."""        
+        """Raises NotImplementedError since environment variables are read-only."""
         raise NotImplementedError("Environment variable store is read-only")
 
 
@@ -313,9 +273,8 @@ class ValueStoreDefault(ValueStore):
         return None, self._source
 
     def save_value(self, item_id: str, value: Any) -> bool:
-        """Raises NotImplementedError since defaults are read-only."""        
+        """Raises NotImplementedError since defaults are read-only."""
         raise NotImplementedError("Default value store is read-only")
-
 
 
 def get_new_masterkey() -> str:

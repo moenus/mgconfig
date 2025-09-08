@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: MIT
 
 from mgconfig.keystores import KeyStores
-from mgconfig.helpers import ConfigKeyMap, SEC
-from typing import Any, Dict
+from mgconfig.config_key_map import ConfigKeyMap, SEC
+from typing import Any, Dict, Optional
 from .config_items import config_items
 
 
@@ -48,7 +48,7 @@ class Key:
         Args:
             item_value (str): The new value to set in the keystore.
         """
-        KeyStores.get(self.keystore_name).set(self.item_name, item_value)
+        KeyStores.set_key(self.keystore_name, self.item_name, item_value)
         self._item_value = item_value
 
     def __str__(self) -> str:
@@ -59,14 +59,14 @@ class Key:
         """
         return str(self._item_value)
 
-    def _retrieve_key(self):
+    def _retrieve_key(self) -> Optional[str]:
         """Fetches the key value from the keystore and caches it.
 
         Raises:
             ValueError: If the keystore cannot provide a value for the key.
         """
-        self._item_value = KeyStores.get(
-            self.keystore_name).get(self.item_name)
+        self._item_value = KeyStores.get_key(
+            self.keystore_name, self.item_name)
         if self._item_value is None:
             raise ValueError(
                 f'Keystore {self.keystore_name} cannot provide a value for {self.item_name}.')
@@ -106,24 +106,17 @@ class KeyProvider:
 
         for key_name in key_config:
             keystore_name = self._get_value(key_name, KEYSTORE_NAME_TAG)
-            item_name =self._get_value(key_name, ITEM_NAME_TAG)
-            if not KeyStores.contains(keystore_name):
-                raise ValueError(
-                    f'Invalid keystore name {keystore_name}')
-            try:
-                KeyStores.get(keystore_name).configure()
-                self._keys[key_name] = Key(keystore_name, item_name)
-            except Exception as e:
-                raise ValueError(
-                    f'Cannot find valid configuration for key {key_name}.')
+            item_name = self._get_value(key_name, ITEM_NAME_TAG)
+
+            self._keys[key_name] = Key(keystore_name, item_name)
 
     def _get_value(self, key_name, sub_tag: str):
-            value_obj = config_items.get(
-                key_config[key_name][sub_tag].id)
-            if value_obj:
-                return value_obj.value
-            raise ValueError(
-                    f'Cannot find valid configuration for id {key_config[key_name][sub_tag].id}.')
+        value_obj = config_items.get(
+            key_config[key_name][sub_tag].id)
+        if value_obj:
+            return value_obj.value
+        raise ValueError(
+            f'Cannot find valid configuration for id {key_config[key_name][sub_tag].id}.')
 
     def get(self, name: str) -> str:
         """Retrieves the value of a named key.

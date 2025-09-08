@@ -7,7 +7,7 @@ from .config_items import config_items, config_items_new
 from .config_item_handler import ConfigItem, ConfigItemHandler
 from .extension_system import PostProcessing
 from typing import Any, Dict, Mapping, Sequence, Optional, Union
-from .helpers import config_logger
+from .config_logger import config_logger
 from .singleton_meta import SingletonMeta
 from types import MappingProxyType
 

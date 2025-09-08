@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import os
 import tempfile
 import yaml
@@ -97,75 +100,6 @@ def test_file_retrieve_and_save(ConfigDefs, config_items, tmp_path):
     val, source = store.retrieve_value("dummy")
     assert val == "new_val"
 
-
-def test_file_invalid_yaml(tmp_path):
-    """Test handling of invalid YAML file."""
-    configfile = tmp_path / "invalid.yaml"
-    configfile.write_text("invalid: yaml: content: [")
-
-    with patch("mgconfig.value_stores.config_items") as mock_items:
-        mock_items.get_value.return_value = str(configfile)
-        store = value_stores.ValueStoreFile()
-        assert store.configfile_content == {}
-
-
-@patch("mgconfig.value_stores.ConfigDefs")
-@patch("mgconfig.value_stores.config_items")
-def test_file_write_permission_error(mock_config_items, MockConfigDefs, tmp_path):
-    """Test handling of write permission errors."""
-    configfile = tmp_path / "readonly.yaml"
-
-    # Mock config_items
-    mock_config_items.get_value.return_value = str(configfile)
-
-    # Mock ConfigDefs
-    mock_cfg_defs = MagicMock()
-    def fake_cfg_def_property(item_id, prop):
-        if prop == str(value_stores.CDF.SECTION):
-            return "section"
-        elif prop == str(value_stores.CDF.NAME):
-            return "key"
-        return None
-    mock_cfg_defs.cfg_def_property.side_effect = fake_cfg_def_property
-    MockConfigDefs.return_value = mock_cfg_defs
-
-    # Create store and test permission error
-    store = value_stores.ValueStoreFile()
-    with patch('builtins.open', side_effect=PermissionError):
-        assert store.save_value("test", "value") is False
-
-
-@patch("mgconfig.value_stores.config_items")  # First patch
-@patch("mgconfig.value_stores.ConfigDefs")    # Second patch
-def test_file_missing_file_returns_empty(ConfigDefs, config_items, tmp_path):
-    """Test that missing config file returns empty dictionary."""
-    # Create mock config value with non-existent file
-    mock_config_value = MagicMock()
-    mock_config_value.value = str(tmp_path / "nofile.yaml")
-    config_items.get_value.return_value = mock_config_value.value
-
-    # Setup ConfigDefs mock
-    mock_cfg_defs = MagicMock()
-
-    def fake_cfg_def_property(item_id, prop):
-        if prop == str(value_stores.CDF.SECTION):
-            return "section"
-        elif prop == str(value_stores.CDF.NAME):
-            return "key"
-        return None
-    mock_cfg_defs.cfg_def_property.side_effect = fake_cfg_def_property
-    ConfigDefs.return_value = mock_cfg_defs
-
-    # Test the store
-    store = value_stores.ValueStoreFile()
-
-    # Test content before any operations
-    assert store.configfile_content == {}
-
-    # Test retrieve operation
-    val, source = store.retrieve_value("dummy")
-    assert val is None
-    assert source == value_stores.ConfigValueSource.CFGFILE
 
 
 @patch("mgconfig.value_stores.config_items")

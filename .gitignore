@@ -13,5 +13,6 @@ venv/
 # Others
 .DS_Store
 
-mg-instructions.md
+
 add_copyright.py
+mgconfig.debug.txt

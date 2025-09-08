@@ -4,7 +4,7 @@
 # test_mgconf.py
 import logging
 import pytest
-from mgconfig.helpers import LoggerWrapper
+from mgconfig.config_logger import LoggerWrapper
 
 
 # -------------------------

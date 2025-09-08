@@ -28,7 +28,8 @@
 # SOFTWARE.
 # -----------------------------------------------------------------------------
 
-from .helpers import config_logger, ConfigKeyMap
+from .config_key_map import ConfigKeyMap
+from .config_logger import config_logger
 from .extension_system import DefaultValues, DefaultFunctions, PostProcessing
 from .configuration import Configuration
 from .config_types import ConfigTypes

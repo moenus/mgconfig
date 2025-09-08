@@ -1,1 +1,12 @@
-{"_header":{"version":1,"kdf":"HKDF-SHA256","salt_b64":"ZxyqhobaAz3g13hYRcyqlmSugiRI45ONspY1WjVv76s=","created_at":1757001028,"mk_hash":"OGK4wPyJe4HhewI8TFtq9hyNrYmNMkF3uvAempSVZlc=","items_mac_b64":"yn4El+a6Z1wI+JBw3bByVvvdXRAzORx/RYUMn4YoWQ0=","items_mac_alg":"HMAC-SHA256"},"items":{}}
+{
+  "_header": {
+    "version": 1,
+    "kdf": "HKDF-SHA256",
+    "salt_b64": "aiw92iToFVhxfDGbPxBsjwVemh+DcNOLMC/zMO1BCQk=",
+    "created_at": 1757276158,
+    "mk_hash": "5XfivrbrSzv7AG9VYBO5rDY91IyDmAaEEryJMCzyJes=",
+    "items_mac_b64": "rsIjqefAiwxy8Kid2SqNifNoMC0Qa1jWQRdOy3ZqYa8=",
+    "items_mac_alg": "HMAC-SHA256"
+  },
+  "items": {}
+}

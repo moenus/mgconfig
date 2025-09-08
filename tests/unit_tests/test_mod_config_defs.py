@@ -1,9 +1,6 @@
 # Copyright (c) 2025 moenus
 # SPDX-License-Identifier: MIT
 
-# test_config_defs.py
-# Unit tests for config_defs.py
-
 import pytest
 import keyword
 import tempfile

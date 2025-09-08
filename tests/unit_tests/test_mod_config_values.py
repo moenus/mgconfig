@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 # import pytest
 # from mgconfig.config_values import config_values
 

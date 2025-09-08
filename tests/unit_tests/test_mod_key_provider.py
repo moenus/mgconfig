@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import pytest
 from unittest.mock import patch, MagicMock
 
@@ -17,34 +20,71 @@ def mock_keystore():
 # ----------------------------
 # Tests for Key
 # ----------------------------
-def test_key_value_retrieves_from_keystore(mock_keystore):
-    with patch.object(key_provider.KeyStores, "get", return_value=mock_keystore):
-        key = key_provider.Key("store1", "item1")
+@patch('mgconfig.key_provider.KeyStores')
+def test_key_value_retrieves_from_keystore(MockKeyStores):
+    """Test that key value is retrieved from keystore."""
+    # Setup mock keystore and value
+    mock_keystore = MagicMock()
+    mock_keystore.get.return_value = "test_value"
 
-        # First access triggers _retrieve_key
-        val = key.value
-        assert val == "secret_value"
-        mock_keystore.get.assert_called_once_with("item1")
+    # Setup KeyStores class mock
+    MockKeyStores.get.return_value = mock_keystore
+    MockKeyStores.get_key.return_value = "test_value"
 
-        # Second access uses cached value (get not called again)
-        val2 = key.value
-        assert val2 == "secret_value"
-        mock_keystore.get.assert_called_once()  # still only 1 call
+    # Create and test key
+    key = key_provider.Key("store1", "item1")
+    assert key.value == "test_value"
 
-
-def test_key_value_set_saves_and_caches(mock_keystore):
-    with patch.object(key_provider.KeyStores, "get", return_value=mock_keystore):
-        key = key_provider.Key("store1", "item1")
-        key.value = "new_secret"
-        mock_keystore.set.assert_called_once_with("item1", "new_secret")
-        assert key._item_value == "new_secret"
-        assert str(key) == "new_secret"
+    # Verify correct interaction with KeyStores
+    MockKeyStores.get_key.assert_called_once_with("store1", "item1")
 
 
-def test_key_retrieve_key_raises_if_none(mock_keystore):
+@patch('mgconfig.key_provider.KeyStores')
+def test_key_value_set_saves_and_caches(MockKeyStores):
+    """Test that setting a key value saves to keystore and updates cache."""
+    # Setup mock keystore
+    mock_keystore = MagicMock()
+    mock_keystore.set.return_value = True
+
+    # Setup KeyStores class mock
+    MockKeyStores.get.return_value = mock_keystore
+    MockKeyStores.prepare_params.return_value = None
+    MockKeyStores.set_key.return_value = True
+    MockKeyStores.get_key.return_value = "new_value"
+
+    # Create key and set value
+    key = key_provider.Key("store1", "item1")
+    key.value = "new_value"
+
+    # Verify interactions
+    MockKeyStores.set_key.assert_called_once_with(
+        "store1", "item1", "new_value")
+    assert key.value == "new_value"  # Verify cached value
+
+    # Verify second retrieval doesn't hit keystore
+    MockKeyStores.get_key.reset_mock()
+    cached_value = key.value
+    assert cached_value == "new_value"
+    MockKeyStores.get_key.assert_not_called()
+
+
+@patch('mgconfig.key_provider.KeyStores')
+def test_key_retrieve_key_raises_if_none(MockKeyStores):
+    """Test that retrieving a non-existent key raises ValueError."""
+    # Setup KeyStores mock
+    mock_keystore = MagicMock()
     mock_keystore.get.return_value = None
-    with patch.object(key_provider.KeyStores, "get", return_value=mock_keystore):
-        key = key_provider.Key("store1", "item1")
-        with pytest.raises(ValueError, match="cannot provide a value"):
-            _ = key.value
-
+    
+    # Setup KeyStores class mock
+    MockKeyStores.get.return_value = mock_keystore
+    MockKeyStores.get_key.return_value = None
+    
+    # Create key and test value retrieval
+    key = key_provider.Key("store1", "item1")
+    
+    expected_error = "Keystore store1 cannot provide a value for item1"
+    with pytest.raises(ValueError, match=expected_error):
+        _ = key.value
+    
+    # Verify interactions
+    MockKeyStores.get_key.assert_called_once_with("store1", "item1")

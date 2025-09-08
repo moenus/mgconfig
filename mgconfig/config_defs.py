@@ -24,6 +24,7 @@ import keyword
 from pathlib import Path
 from enum import Enum
 from .singleton_meta import SingletonMeta
+from .file_cache import FileCache, FileMode, FileFormat
 
 CONFIG_PREFIX = 'config'
 
@@ -251,8 +252,8 @@ class ConfigDefs(metaclass=SingletonMeta):
         if isinstance(cfg_defs_filepaths, (str, Path)):
             cfg_defs_filepaths = [cfg_defs_filepaths]
         for path in map(Path, cfg_defs_filepaths):
-            with path.open("r", encoding="utf-8") as f:
-                cfg_def_data = yaml.safe_load(f)
+            file_cache = FileCache(path, file_format=FileFormat.YAML, file_mode=FileMode.READONLY)
+            cfg_def_data = file_cache.data
             if not isinstance(cfg_def_data, list):
                 raise ValueError(
                     f"Invalid config format in {path}, expected a list.")
@@ -262,7 +263,7 @@ class ConfigDefs(metaclass=SingletonMeta):
         """Parse raw config definitions from YAML into ConfigDef instances.
 
         Args:
-            config_defs_data (list): A list of section dictionaries from the YAML.
+            config_defs_data (list): A list of section dictionaries from definition source file
             config_def_dict (dict): The target dictionary to store results.
 
         Raises:

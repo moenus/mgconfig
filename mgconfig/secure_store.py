@@ -4,20 +4,20 @@
 
 import os
 import json
-import uuid
 import time
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hmac as _hmac, hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from pathlib import Path
-from mgconfig.helpers import config_logger
+from mgconfig.config_logger import config_logger
 from mgconfig.key_provider import KeyProvider
 from cryptography.exceptions import InvalidTag
 from dataclasses import dataclass, fields
 from typing import Optional, Dict
-from .secure_store_helpers import open_secure_file, bytes_to_b64str, b64str_to_bytes, hash_bytes, generate_key_str
+from .secure_store_helpers import bytes_to_b64str, b64str_to_bytes, hash_bytes, generate_key_str
 from enum import Enum
 from collections import namedtuple
+from .file_cache import FileCache, FileFormat
 
 __version__ = 1  # is used in file header and info parameter
 
@@ -99,6 +99,7 @@ class SecureStore:
             key_provider (KeyProvider): Provides a Base64-encoded 'master_key'.
         """
         self.securestore_file = Path(securestore_file)
+        self._file_cache = FileCache(self.securestore_file, FileFormat.JSON)
         self.master_key_str = key_provider.get('master_key')
         self._salt = None  # loaded from file or generated
         self._mk_validated = False
@@ -106,7 +107,9 @@ class SecureStore:
 
         self._header: Optional[StoreHeader] = None
         self._items: Dict[str, Dict[str, str]] = {}
-        if self.securestore_file.exists():
+
+        data = self._file_cache.data  # read implicit data file
+        if data != {}:
             self._ssf_load()
         else:
             self._ssf_create()
@@ -130,21 +133,14 @@ class SecureStore:
 # --------------------------------------------------------------------------------
 
     def _ssf_load(self) -> None:
-        try:
-            with open(self.securestore_file, "r", encoding="utf-8") as f:
-                obj = json.load(f)
-        except (json.JSONDecodeError, OSError) as e:
-            config_logger.error(f"Failed to load secure store: {e}")
-            raise
-
-        h = obj.get("_header", {})
+        h = self._file_cache.data.get("_header", {})
         for field in fields(StoreHeader):
             if field.name not in h:
                 raise ValueError(f"SecureStore header missing '{field.name}'")
         self._header = StoreHeader(**h)
         self._salt = b64str_to_bytes(self._header.salt_b64)
 
-        self._items = obj.get("items", {})
+        self._items = self._file_cache.data.get("items", {})
         self._dirty = False
 
     def _ssf_create(self) -> None:
@@ -168,27 +164,15 @@ class SecureStore:
         """
         if not force and not self._dirty:
             return  # writing file skipped because not dirty and not forced
-        parent_dir = Path(self.securestore_file).parent
-        parent_dir.mkdir(parents=True, exist_ok=True)
 
         # always compute and set MAC
         self._header.items_mac_b64 = self.compute_items_mac(self._items)
         self._header.items_mac_alg = ITEMS_MAC_ALG
 
-        obj = {"_header": self._header.__dict__, "items": self._items}
-        data = json.dumps(obj, ensure_ascii=False,
-                          separators=(",", ":")).encode("utf-8")
-        tmp = self.securestore_file.with_suffix(f".tmp-{uuid.uuid4().hex}")
-
-        # open securely (cross-platform)
-        with open_secure_file(tmp, "w+b") as f:
-            f.write(data)
-            f.flush()
-            os.fsync(f.fileno())
-
-        # Atomic replace
-        os.replace(tmp, self.securestore_file)
-
+        self._file_cache.data["_header"] = self._header.__dict__
+        self._file_cache.data["items"] = self._items
+        self._file_cache.save()
+        
     def _ssf_delete(self) -> None:
         """Delete the secure store file and clear sensitive data from memory."""
         self._items.clear()
@@ -196,6 +180,7 @@ class SecureStore:
         self._salt = None
         if self.securestore_file.exists():
             self.securestore_file.unlink()
+        self._file_cache.clear()               
 
 # --------------------------------------------------------------------------------
 # derive keys

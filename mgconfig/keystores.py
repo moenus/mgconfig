@@ -1,269 +1,24 @@
 # Copyright (c) 2025 moenus
 # SPDX-License-Identifier: MIT
 
-import keyring
-import os
-import json
-from pathlib import Path
-from .helpers import ConfigKeyMap, config_logger, SEC
-from typing import Any, Dict, Optional
-from .config_items import config_items
-
-config_keyfile = ConfigKeyMap(SEC, 'keyfile_filepath')
-config_service_name = ConfigKeyMap(SEC, 'keyring_service_name')
-
-
-class KeyStore:
-    """Base class for different types of keystores.
-
-    Provides a common interface for retrieving and storing secure data.
-    Subclasses must implement the `get` method and may override `set`
-    if writing is supported.
-
-    Attributes:
-        keystore_name (str): Human-readable name of the keystore type.
-        params (Optional[Dict[str, Any]]): Configuration parameters for the keystore.
-        mandatory_conf_names (list): List of required configuration parameter names.
-    """
-
-    keystore_name = 'unknown'
-
-    def __init__(self):
-        """Initializes the keystore with empty parameters."""
-        self.params: Optional[Dict[str, Any]] = None
-        self.mandatory_confs: list[ConfigKeyMap] = []
-
-    def get(self, name: str) -> Optional[str]:
-        """Retrieve a value from the keystore.
-
-        Args:
-            name (str): The key name to retrieve.
-
-        Returns:
-            Optional[str]: The stored value, or None if not found.
-        """
-        return
-
-    def set(self, name: str, value: str) -> None:
-        """Store a value in the keystore.
-
-        Args:
-            name (str): The key name.
-            value (str): The value to store.
-
-        Raises:
-            ValueError: If the keystore type does not support writing.
-        """
-        raise ValueError(
-            f'Cannot update keys in keystore {self.keystore_name}.')
-
-    def get_param(self, name: str):
-        """Retrieve a configuration parameter value.
-
-        Args:
-            name (str): The parameter name.
-
-        Returns:
-            Any: The configuration parameter value.
-
-        Raises:
-            ValueError: If the parameter is missing from the configuration.
-        """
-        if name not in self.params:
-            raise ValueError(
-                f'Configuration item {name} for keystore {self.keystore_name} is missing.')
-        return self.params[name]
-
-    def configure(self):
-        """Configure the keystore with required parameters.
-
-        Args:
-            config_params (Optional[Dict[str, Any]]): Configuration parameters.
-
-        Raises:
-            ValueError: If any mandatory parameter is missing.
-        """
-        self.params = {}
-
-        for config_key_map in self.mandatory_confs:
-
-            config_value = config_items.get(config_key_map.id)
-            if config_value is None:
-                raise ValueError(
-                    f'Configuration ID {config_key_map.id} for keystore {self.keystore_name} not found.')
-            self.params[config_key_map] = config_value.value
-            if self.params[config_key_map] is None:
-                raise ValueError(
-                    f'Mandatory parameter {config_key_map.id} for keystore {self.keystore_name} not found.')
-
-    def check_configuration(self):
-        """Validate that the keystore has been properly configured.
-
-        Raises:
-            ValueError: If the keystore is not configured.
-        """
-        if self.params is None:
-            raise ValueError(
-                f'Keystore {self.keystore_name} is not configured properly.')
-
-
-class KeyStoreFile(KeyStore):
-    """File-based keystore implementation.
-
-    Stores keys in a JSON file on disk.
-
-    Attributes:
-        filedata (dict): In-memory storage of loaded key-value pairs.
-    """
-    keystore_name = 'file'
-
-    def __init__(self):
-        """Initialize the file-based keystore."""
-        super().__init__()
-        self.filedata = None
-        self.mandatory_confs: list[ConfigKeyMap] = [config_keyfile]
-
-    @property
-    def filepath(self):
-        """Path to the keystore file.
-
-        Returns:
-            str: File path from configuration.
-        """
-        return self.get_param(config_keyfile.id)
-
-    def check_configuration(self):
-        """Validate configuration and load file data if necessary.
-
-        Raises:
-            ValueError: If the keystore file is missing or empty.
-        """
-        super().check_configuration()
-        if not self.filedata:
-            self.filedata = {}
-            if os.path.exists(self.filepath):
-                with open(self.filepath, "r") as f:
-                    self.filedata = json.load(f)
-            if self.filedata is None or self.filedata == {}:
-                raise ValueError(
-                    f'Could not read keystore data from file {self.filepath}.')
-
-    def get(self, item_name: str) -> str:
-        """Retrieve a value from the file-based keystore.
-
-        Args:
-            item_name (str): Key name.
-
-        Returns:
-            Optional[str]: Stored value, or None if not found.
-        """
-        self.check_configuration()
-        if self.filedata:
-            return self.filedata.get(item_name)
-
-    def set(self, item_name: str, value: str):
-        """Store a value in the file-based keystore.
-
-        Args:
-            item_name (str): Key name.
-            value (str): Value to store.
-        """
-        self.check_configuration()
-        self.filedata[item_name] = value
-        self._save()
-
-    def _save(self):
-        """Save in-memory key-value pairs to disk.
-
-        Returns:
-            bool: True if save was successful, False otherwise.
-        """
-        if not os.path.exists(self.filepath):
-            path = Path(self.filepath).parent
-            path.mkdir(parents=True, exist_ok=True)
-        else:
-            if not os.access(self.filepath, os.W_OK):
-                return False
-        try:
-            with open(self.filepath, "w") as f:
-                json.dump(self.filedata, f)
-            return True
-        except Exception as e:
-            config_logger.error(f'Cannot write to file {self.filepath}: {e}')
-            return False
-
-
-class KeyStoreKeyring(KeyStore):
-    """Keyring-based keystore implementation.
-
-    Uses the system keyring service for storing secure data.
-    """
-    keystore_name = 'keyring'
-
-    def __init__(self):
-        """Initialize the keyring-based keystore."""
-        super().__init__()
-        self.mandatory_confs: list[ConfigKeyMap] = [config_service_name]
-
-    @property
-    def service_name(self) -> str:
-        """Retrieve the configured keyring service name.
-
-        Returns:
-            str: Service name.
-        """
-        return self.get_param(config_service_name.id)
-
-    def get(self, item_name: str) -> Optional[str]:
-        """Retrieve a value from the keyring.
-
-        Args:
-            item_name (str): Key name.
-
-        Returns:
-            Optional[str]: Stored value, or None if not found.
-        """
-        self.check_configuration()
-        return keyring.get_password(
-            self.service_name, item_name)
-
-    def set(self, item_name: str, value: str) -> None:
-        """Store a value in the keyring.
-
-        Args:
-            item_name (str): Key name.
-            value (str): Value to store.
-        """
-        self.check_configuration()
-        keyring.set_password(self.service_name,
-                             item_name, value)
-
-
-class KeyStoreEnv(KeyStore):
-    """Environment variable-based keystore implementation.
-
-    Retrieves keys from environment variables.
-    """
-    keystore_name = 'env'
-
-    def get(self, item_name):
-        """Retrieve a value from environment variables.
-
-        Args:
-            item_name (str): Environment variable name.
-
-        Returns:
-            Optional[str]: Environment variable value, or None if not set.
-        """
-        return os.getenv(item_name)
+from .config_key_map import ConfigKeyMap, SEC
+from typing import Any, Dict, Optional, Sequence
+from .keystore_classes import KeyStore, KeyStoreFile, KeyStoreKeyring, KeyStoreEnv
 
 
 class KeyStores:
-    """Registry of available keystore instances."""
-    _ks_dict = {}
+    """Registry of available keystore instances.
+
+    This class is by purpose not thread save
+
+    Provides a global container for keystore instances and helper
+    methods to add, retrieve, and interact with them.
+    """
+    
+    _ks_dict: Dict[str, KeyStore] = {}
 
     @classmethod
-    def add(cls, ks: KeyStore):
+    def add(cls, ks: KeyStore) -> None:
         """Register a new keystore.
 
         Args:
@@ -290,6 +45,40 @@ class KeyStores:
         return cls._ks_dict.get(name)
 
     @classmethod
+    def get_key(cls, keystore_name: str, item_name: str) -> Optional[str]:
+        """Retrieve a key from a registered keystore.
+
+        Args:
+            keystore_name (str): Keystore name.
+            item_name (str): Item key.
+
+        Returns:
+            Optional[str]: Stored value, or None if not found.
+
+        Raises:
+            ValueError: If the keystore is not registered.
+        """
+        cls.check_keystore(keystore_name)
+        key_store = cls._ks_dict.get(keystore_name)
+        return key_store.get(item_name)
+
+    @classmethod
+    def set_key(cls, keystore_name: str, item_name: str, key: str) -> None:
+        """Store a key in a registered keystore.
+
+        Args:
+            keystore_name (str): Keystore name.
+            item_name (str): Item key.
+            key (str): Value to store.
+
+        Raises:
+            ValueError: If the keystore is not registered.
+        """
+        cls.check_keystore(keystore_name)
+        key_store = cls._ks_dict.get(keystore_name)
+        key_store.set(item_name, key)
+
+    @classmethod
     def contains(cls, name: str) -> bool:
         """Check if a keystore is registered.
 
@@ -301,6 +90,30 @@ class KeyStores:
         """
         return name in cls._ks_dict
 
+
+    @classmethod
+    def check_keystore(cls, keystore_name: str):
+        """Validate that a keystore is registered.
+
+        Args:
+            keystore_name (str): Keystore name.
+
+        Raises:
+            ValueError: If the keystore is not registered.
+        """        
+        if keystore_name not in cls._ks_dict:
+            raise ValueError(
+                f'Invalid keystore name {keystore_name}')
+
+    @classmethod
+    def list_keystores(cls) -> Sequence[str]:
+        """List names of registered keystores.
+
+        Returns:
+            Sequence[str]: List of registered keystore names.
+        """        
+        return list(cls._ks_dict.keys())
+    
 
 KeyStores.add(KeyStoreEnv())
 KeyStores.add(KeyStoreFile())

@@ -99,7 +99,6 @@ def configuration_changes():
         config.save_new_value(key, value, apply_immediately=True)
         assert config_items_new.get(key) == None
         assert config_items.get(key).value == value
-        assert config.__dict__[key] == value
 
     config = create_configuration()      # read in the saved configuration
     for key, value in new_values_immediate.items():

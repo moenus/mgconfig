@@ -6,5 +6,6 @@
   configs:
   - name: test
     type: str
+    readonly: True
     default: teststring
     description: this configuration is used to demonstrate the basic usage of mgconfig
