@@ -29,20 +29,23 @@
 # -----------------------------------------------------------------------------
 
 from .config_key_map import ConfigKeyMap
-# from .config_logger import config_logger
 from .extension_system import DefaultValues, DefaultFunctions, PostProcessing
 from .configuration import Configuration
 from .config_types import ConfigTypes
 from .value_stores import get_new_masterkey
 import logging
 
-__version__ = "0.1.2"
-# config_logger.setLevel(logging.INFO)
+__version__ = "0.1.0"
 
-# configuration_logger = config_logger 
+logger = logging.getLogger(__name__)
 
-# the predefined classes for section handles and predefined objects for resolving an config id at runtime
-# are used in mgconfig code to find the configuration for configuration value stores. They will be resolved
-# to the actual values at runtime.
-# Below they are initialized to some start values but they can be overwritten in your application code
-# before the configuration object is initialized.
+"""Initialize the logger with a default console handler."""
+logger.setLevel(logging.INFO)
+if not logger.handlers:  # avoid duplicate handlers
+    console_handler = logging.StreamHandler()
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+

@@ -2,10 +2,10 @@
   "_header": {
     "version": "v1",
     "kdf": "HKDF-SHA256",
-    "salt_b64": "TpcbKvw+a2FLPBLfYHzifC2NWCCy2pFU++AYjwoc5n8=",
-    "created_at": 1757411260,
-    "mk_hash": "zm3oj4rod6tCDty+as6wUjB+mrcOpEbRONd34AThatk=",
-    "items_mac_b64": "vMBKe0VmjPO2Y8o7dVVUTflF3fElQhym0jRbKDq92r0=",
+    "salt_b64": "LTv13DSShj05fEfvUY1QZyy08UNzGlwRlJBZfe/+fCM=",
+    "created_at": 1757413542,
+    "mk_hash": "CZxsMxJQ2MhNCzsVHISEgC79tNSah5Pe18BJyNwll30=",
+    "items_mac_b64": "thaErCUyqXwmdF3lebJ/vKpkakQKmdfCLwaG7b+hnk4=",
     "items_mac_alg": "HMAC-SHA256"
   },
   "items": {}

@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import pytest
 from unittest.mock import patch, mock_open, MagicMock
 from pathlib import Path

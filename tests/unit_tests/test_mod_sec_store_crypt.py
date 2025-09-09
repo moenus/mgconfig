@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 import pytest
 from cryptography.exceptions import InvalidKey, InvalidTag, InvalidSignature
 import json

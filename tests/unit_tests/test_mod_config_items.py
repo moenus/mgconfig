@@ -1,3 +1,6 @@
+# Copyright (c) 2025 moenus
+# SPDX-License-Identifier: MIT
+
 from unittest.mock import MagicMock
 import pytest
 from dataclasses import dataclass
