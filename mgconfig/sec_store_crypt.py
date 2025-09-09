@@ -7,9 +7,10 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hmac as _hmac, hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from typing import Optional, Dict, Tuple
-from .sec_store_helpers import bytes_to_b64str, b64str_to_bytes
 from enum import Enum
 from dataclasses import dataclass
+import base64
+
 
 # === Crypto Parameters ===
 AES_KEY_SIZE = 32        # 256-bit AES
@@ -20,6 +21,34 @@ MAX_SECRET_LEN = 1000    # maximum secret length in bytes
 KDF_ALG = "HKDF-SHA256"
 ITEMS_MAC_ALG = "HMAC-SHA256"
 VERSION_STR = "v1"  # is used in file header and info parameter
+
+
+# --------------------------------------------------------------------------------
+# base64 string <--> bytes conversions
+# --------------------------------------------------------------------------------
+
+def bytes_to_b64str(value_bytes: bytes) -> str:
+    """Convert bytes to a Base64-encoded UTF-8 string.
+
+    Args:
+        value_bytes (bytes): Arbitrary bytes.
+
+    Returns:
+        str: Base64-encoded string.
+    """
+    return base64.b64encode(value_bytes).decode('utf-8')
+
+
+def b64str_to_bytes(value_str: str) -> bytes:
+    """Convert a Base64-encoded string to bytes.
+
+    Args:
+        value_str (str): Base64-encoded string.
+
+    Returns:
+        bytes: Decoded bytes.
+    """
+    return base64.b64decode(value_str)
 
 
 # --------------------------------------------------------------------------------
@@ -80,7 +109,7 @@ def _generate_key_str(key_size: int) -> str:
 # --------------------------------------------------------------------------------
 @dataclass(frozen=True)
 class KeyTypeDef:
-    """Key type definition for derived keys using HKDF."""    
+    """Key type definition for derived keys using HKDF."""
     name: str
     alg: str
     info: bytes
@@ -95,24 +124,25 @@ class KeyTypeDef:
 
         Returns:
             bytes: Derived key of length `self.key_size`.
-        """        
+        """
         hkdf = HKDF(algorithm=hashes.SHA256(), length=self.key_size,
                     salt=salt, info=self.info)
         return hkdf.derive(master_key)
 
+
 class KeyType(Enum):
     AES = KeyTypeDef(name='aes',
-                    alg='AESGCM',
-                    info=("SecureStore|enc-key|"+VERSION_STR).encode(),
-                    key_size=32)
+                     alg='AESGCM',
+                     info=("SecureStore|enc-key|"+VERSION_STR).encode(),
+                     key_size=32)
     MAC = KeyTypeDef(name='mac',
-                    alg='HMAC-SHA256',
-                    info=("SecureStore|mac-key|"+VERSION_STR).encode(),
-                    key_size=32)
+                     alg='HMAC-SHA256',
+                     info=("SecureStore|mac-key|"+VERSION_STR).encode(),
+                     key_size=32)
 
 
 class CryptoContextAES:
-    """AES-GCM encryption/decryption context with associated data (AAD)."""    
+    """AES-GCM encryption/decryption context with associated data (AAD)."""
 
     def __init__(self, name: str, version: str, salt: bytes, master_key: bytes):
         """Initialize AES crypto context.
@@ -122,7 +152,7 @@ class CryptoContextAES:
             version (str): Version string for AAD construction.
             salt (bytes): Salt value for key derivation.
             master_key (bytes): Master key material.
-        """        
+        """
         self._master_key = master_key
         self._name = name
         self._version = version
@@ -152,7 +182,7 @@ class CryptoContextAES:
 
         Raises:
             ValueError: If the plaintext exceeds `MAX_SECRET_LEN`.
-        """        
+        """
         value_bytes = str(value).encode("utf-8")
         if len(value_bytes) > MAX_SECRET_LEN:
             raise ValueError("value too large")
@@ -180,7 +210,7 @@ class CryptoContextAES:
 
 
 class CryptoContextMAC:
-    """HMAC-SHA256 integrity protection context for items."""    
+    """HMAC-SHA256 integrity protection context for items."""
 
     def __init__(self, salt: bytes, master_key: bytes):
         """Initialize MAC crypto context.
@@ -188,7 +218,7 @@ class CryptoContextMAC:
         Args:
             salt (bytes): Salt value for key derivation.
             master_key (bytes): Master key material.
-        """        
+        """
         self._master_key = master_key
         self._salt = salt
 
@@ -210,7 +240,6 @@ class CryptoContextMAC:
         h.update(self._canonicalize_items(items))
         return bytes_to_b64str(h.finalize())
 
-
     def verify_items_mac(self, items: Dict[str, Dict[str, str]], mac_b64: str) -> None:
         """Verify the integrity MAC for a set of items.
 
@@ -225,7 +254,6 @@ class CryptoContextMAC:
         h.update(self._canonicalize_items(items))
         h.verify(b64str_to_bytes(mac_b64))
 
-
     def _canonicalize_items(self, items: Dict[str, Dict[str, str]]) -> bytes:
         """Canonicalize items to JSON for deterministic HMAC computation.
 
@@ -237,4 +265,4 @@ class CryptoContextMAC:
         """
         """Canonical JSON for deterministic HMAC (sorted keys, tight separators)."""
         return json.dumps(items, ensure_ascii=False, sort_keys=True,
-                        separators=(",", ":")).encode("utf-8")
+                          separators=(",", ":")).encode("utf-8")

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 from mgconfig.secure_store import SecureStore
-from mgconfig.sec_store_helpers import generate_key_str
+from mgconfig.sec_store_crypt import generate_master_key_str
 from pathlib import Path
 
 import os
@@ -25,7 +25,7 @@ DEMO_ITEM_NAME = 'test_password'
 
 KEYSTORE_FILE = get_test_filepath("keystore_demo.json")
 
-os.environ["APP_KEY"] = generate_key_str()
+os.environ["APP_KEY"] = generate_master_key_str()
 
 
 class DummyProvider(dict):
@@ -94,7 +94,7 @@ def test_secure_store_module_wrong_master():
     provider = DummyProvider()
     provider2 = DummyProvider()
     # assign wrong master key
-    provider2.set('master_key', generate_key_str())
+    provider2.set('master_key', generate_master_key_str())
     assert run_cycle(provider, provider2) == False
     assert validate_master_key(provider2) == False
 
@@ -115,6 +115,6 @@ def test_secure_store_key_exchange():
 
 
 if __name__ == '__main__':
-    print(generate_key_str())
+    print(generate_master_key_str())
     # test_secure_store_key_exchange()
     print('Finished.')

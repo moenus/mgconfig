@@ -5,10 +5,9 @@
 from pathlib import Path
 from mgconfig.key_provider import KeyProvider
 from typing import Optional, Dict, Tuple
-from .sec_store_helpers import bytes_to_b64str, b64str_to_bytes
 from .file_cache import FileCache, FileFormat, FileMode
-from .sec_store_crypt import hash_bytes, generate_master_key_str, CryptoContextAES
-from .sec_store_header import  SecurityHeader, new_header, create_header
+from .sec_store_crypt import hash_bytes, generate_master_key_str, CryptoContextAES, bytes_to_b64str, b64str_to_bytes
+from .sec_store_header import  SecurityHeader
 
 import logging
 logger = logging.getLogger(__name__)
@@ -58,7 +57,6 @@ class SecureStore:
         self._file_cache = FileCache(
             self.securestore_file, FileFormat.JSON, FileMode.ATOMIC_WRITE)
         self.master_key_str = key_provider.get('master_key')
-        # self._salt = None  # loaded from file or generated
         self._mk_validated = False
         self._dirty = False
 
@@ -90,12 +88,12 @@ class SecureStore:
 # --------------------------------------------------------------------------------
 
     def _ssf_load(self) -> None:
-        self._header = create_header(self._file_cache.data.get("_header", {}))
+        self._header = SecurityHeader.prepare(self._file_cache.data.get("_header", {}))
         self._items = self._file_cache.data.get("items", {})
         self._dirty = False
 
     def _ssf_create(self) -> None:
-        self._header = new_header(self.master_key_hash)
+        self._header = SecurityHeader.create_new(self.master_key_hash)
         self._items = {}
         self._ssf_save(force=True)
 
@@ -151,6 +149,8 @@ class SecureStore:
         old_master_key_str = self.retrieve_secret(AUTO_EXCHANGE_OLD_MASTER_KEY)
         if old_master_key_str is None or self._header.mk_hash != hash_bytes(b64str_to_bytes(old_master_key_str)):
             return False
+
+        # key exchange requested
 
         new_master_keystr = self.master_key_str
         self.master_key_str = old_master_key_str

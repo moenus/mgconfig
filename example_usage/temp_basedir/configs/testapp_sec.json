@@ -1,11 +1,11 @@
 {
   "_header": {
-    "version": 1,
+    "version": "v1",
     "kdf": "HKDF-SHA256",
-    "salt_b64": "tlKsa//clVGanYdJQYk63ohsi0HTeu4cSaN7wM4jC90=",
-    "created_at": 1757400335,
-    "mk_hash": "shK08M5pdlDM1CTLdVjf+Dyv7OXNQHxmLbKLkYCHIWE=",
-    "items_mac_b64": "LM/9x1Wn3sj4zH0JYtMLlkAFW8VZCUQB8dVLvhjGbv8=",
+    "salt_b64": "TpcbKvw+a2FLPBLfYHzifC2NWCCy2pFU++AYjwoc5n8=",
+    "created_at": 1757411260,
+    "mk_hash": "zm3oj4rod6tCDty+as6wUjB+mrcOpEbRONd34AThatk=",
+    "items_mac_b64": "vMBKe0VmjPO2Y8o7dVVUTflF3fElQhym0jRbKDq92r0=",
     "items_mac_alg": "HMAC-SHA256"
   },
   "items": {}

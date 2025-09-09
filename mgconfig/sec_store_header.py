@@ -6,8 +6,7 @@ import time
 from dataclasses import dataclass, fields
 from typing import Optional, Dict, Tuple
 VERSION_STR = "v1"  # is used in file header and info parameter
-from .sec_store_crypt import ITEMS_MAC_ALG, KDF_ALG, generate_salt_str, CryptoContextMAC, VERSION_STR
-from .sec_store_helpers import b64str_to_bytes, bytes_to_b64str
+from .sec_store_crypt import ITEMS_MAC_ALG, KDF_ALG, generate_salt_str, CryptoContextMAC, VERSION_STR, b64str_to_bytes, bytes_to_b64str
 
 
 # --------------------------------------------------------------------------------
@@ -44,21 +43,21 @@ class SecurityHeader:
             raise ValueError(
                 "SecureStore integrity check failed (items MAC mismatch)") from e
 
+    @classmethod
+    def create_new(cls, master_key_hash: bytes) -> "SecurityHeader":
+        return cls(
+            version=VERSION_STR,
+            kdf=KDF_ALG,
+            salt_b64=generate_salt_str(),  # public, random, per-store
+            created_at=int(time.time()),
+            mk_hash=master_key_hash,
+            items_mac_b64=None,
+            items_mac_alg=None
+        )
 
-def new_header(master_key_hash: bytes) -> SecurityHeader:
-    return SecurityHeader(
-        version=VERSION_STR,
-        kdf=KDF_ALG,
-        salt_b64=generate_salt_str(),  # public, random, per-store
-        created_at=int(time.time()),
-        mk_hash=master_key_hash,
-        items_mac_b64=None,
-        items_mac_alg=None
-    )
-
-
-def create_header(header_dict: dict) -> SecurityHeader:
-    for field in fields(SecurityHeader):
-        if field.name not in header_dict:
-            raise ValueError(f"SecureStore header missing '{field.name}'")
-    return SecurityHeader(**header_dict)
+    @classmethod
+    def prepare(cls, header_dict: dict) -> "SecurityHeader":
+        for field in fields(cls):
+            if field.name not in header_dict:
+                raise ValueError(f"SecureStore header missing '{field.name}'")
+        return cls(**header_dict)
