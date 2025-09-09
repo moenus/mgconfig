@@ -7,7 +7,7 @@ from mgconfig.key_provider import KeyProvider
 from typing import Optional, Dict, Tuple
 from .sec_store_helpers import bytes_to_b64str, b64str_to_bytes
 from .file_cache import FileCache, FileFormat, FileMode
-from .sec_store_crypt import sec_encrypt, sec_decrypt, hash_bytes, generate_master_key_str
+from .sec_store_crypt import hash_bytes, generate_master_key_str, CryptoContextAES
 from .sec_store_header import  SecurityHeader, new_header, create_header
 
 import logging
@@ -18,9 +18,6 @@ logger = logging.getLogger(__name__)
 # There is by design no backup mechanism for the secure file on disk.
 # The master key is provided from a key store.
 
-
-
-ITEMS_MAC_ALG = "HMAC-SHA256"
 
 # current master key encrypted with the new master key
 AUTO_EXCHANGE_OLD_MASTER_KEY = '_aemk_old_k'
@@ -94,17 +91,11 @@ class SecureStore:
 
     def _ssf_load(self) -> None:
         self._header = create_header(self._file_cache.data.get("_header", {}))
-        # h = self._file_cache.data.get("_header", {})
-        # for field in fields(StoreHeader):
-        #     if field.name not in h:
-        #         raise ValueError(f"SecureStore header missing '{field.name}'")
-        # self._header = StoreHeader(**h)
-
         self._items = self._file_cache.data.get("items", {})
         self._dirty = False
 
     def _ssf_create(self) -> None:
-        self._header = new_header(self._master_key)
+        self._header = new_header(self.master_key_hash)
         self._items = {}
         self._ssf_save(force=True)
 
@@ -185,7 +176,8 @@ class SecureStore:
         Raises:
             ValueError: If the secret exceeds MAX_SECRET_LEN.
         """
-        nonce, ct = sec_encrypt(name, value, self._master_key, self._header.version, self._header.salt_b64,self._header.mk_hash)
+        crypt_context = CryptoContextAES(name, self._header.version, self._header.salt, self._master_key)
+        nonce, ct = crypt_context.encrypt(value)
         self._items[name] = {ITEMNAME_NONCE: nonce, ITEMNAME_CIPHERTEXT: ct}        
         self._dirty = True
 
@@ -204,7 +196,9 @@ class SecureStore:
         if not entry:
             return None
         try:
-            return sec_decrypt(name, self._master_key, self._header.version, self._header.salt_b64,self._header.mk_hash, entry[ITEMNAME_NONCE], entry[ITEMNAME_CIPHERTEXT])
+            crypt_context = CryptoContextAES(name, self._header.version, self._header.salt, self._master_key)  
+            value = crypt_context.decrypt( entry[ITEMNAME_NONCE], entry[ITEMNAME_CIPHERTEXT])
+            return value          
         except Exception as e:
             logger.error(f"Decryption failed for {name}: {e}")
             return None
@@ -321,4 +315,3 @@ class SecureStore:
             if value is not None:
                 unencrypted[key] = value
         return unencrypted
-
