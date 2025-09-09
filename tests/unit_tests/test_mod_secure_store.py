@@ -9,8 +9,8 @@ import pytest
 from unittest.mock import MagicMock
 
 import mgconfig.secure_store as sm 
-from mgconfig.secure_store_helpers import hash_bytes , generate_key_str
-
+from mgconfig.sec_store_crypt import hash_bytes, AES_KEY_SIZE 
+# from mgconfig.sec_store_crypt import generate_master_key_str as generate_key_str
 
 """
 Notes:
@@ -33,7 +33,7 @@ Tests cover:
 class DummyKeyProvider:
     """Simple fake key provider for tests."""
     def __init__(self, master_key=None):
-        self._master_key = master_key or sm.bytes_to_b64str(os.urandom(sm.AES_KEY_SIZE))
+        self._master_key = master_key or sm.bytes_to_b64str(os.urandom(AES_KEY_SIZE))
 
     def get(self, keyname):
         if keyname == 'master_key':

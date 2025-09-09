@@ -101,13 +101,12 @@ def test_file_retrieve_and_save(ConfigDefs, config_items, tmp_path):
     assert val == "new_val"
 
 
-
 @patch("mgconfig.value_stores.config_items")
 def test_secure_store_initialization_logging(mock_items, caplog):
     """Test logging during secure store initialization."""
     # Set logging level to capture all messages
     caplog.set_level('DEBUG')
-    
+
     # Setup mock config
     mock_config = MagicMock()
     mock_config.value = "test.sec"
@@ -130,26 +129,40 @@ def test_secure_store_initialization_logging(mock_items, caplog):
             store = value_stores.ValueStoreSecure()
             assert "Secure store corrupted or master key invalid." in caplog.text
 
-def test_secure_store_save_logging(caplog):
+
+@patch("mgconfig.value_stores.config_items")
+def test_secure_store_save_logging(mock_items, caplog):
     """Test logging during secure store save operations."""
-    with patch("mgconfig.value_stores.config_items") as mock_items:
-        mock_items.get.return_value = MagicMock(value="test.sec")
+    # Set logging level to capture all messages
+    caplog.set_level('DEBUG')
+    
+    # Setup mock config
+    mock_config = MagicMock()
+    mock_config.value = "test.sec"
+    mock_items.get.return_value = mock_config
 
-        with patch("mgconfig.value_stores.KeyProvider"):
-            with patch("mgconfig.value_stores.SecureStore") as MockSecureStore:
-                store = value_stores.ValueStoreSecure()
+    with patch("mgconfig.value_stores.KeyProvider"):
+        with patch("mgconfig.value_stores.SecureStore") as MockSecureStore:
+            # Setup mock secure store
+            mock_store = MagicMock()
+            mock_store.validate_master_key.return_value = True
+            mock_store.store_secret.return_value = True
+            MockSecureStore.return_value = mock_store
 
-                # Test successful save
-                caplog.clear()
-                assert store.save_value("test_id", "secret")
-                assert "saved to keystore" in caplog.text
+            # Initialize store and test successful save
+            store = value_stores.ValueStoreSecure()
+            caplog.clear()
+            result = store.save_value("test_id", "secret")
+            assert result is True
+            assert "Secret test_id saved to keystore" in caplog.text
 
-                # Test failed save
-                caplog.clear()
-                MockSecureStore.return_value.store_secret.side_effect = Exception(
-                    "Save failed")
-                assert not store.save_value("test_id", "secret")
-                assert "Cannot store secret" in caplog.text
+            # Test failed save
+            caplog.clear()
+            mock_store.store_secret.side_effect = Exception("Save failed")
+            result = store.save_value("test_id", "secret")
+            assert result is False
+            assert "Cannot store secret" in caplog.text
+
 
 # -----------------------------
 # ValueStoreEnv

@@ -119,24 +119,21 @@ class FileCache:
         self._data = {}
         self._ready = False
 
-    def save(self) -> bool:
+    def save(self) -> None:
         """Save cached data to file.
-
-        Returns:
-            bool: True if save succeeded, False otherwise.
 
         Raises:
             ValueError: If cache is not ready.
         """
         if not self._ready:
-            raise ValueError(f'Cannot save.')
+            raise ValueError(f'Cannot save because file cache was not properly initialized.')
         try:
             self._write_file()
-            return True
         except Exception as e:
-            logger.error(
+            logger.debug(
                 f'Cannot save data to file "{self._filepath}": {e}.')
-            return False
+            raise 
+
 
     def _read_file(self) -> None:
         """Read file contents into the cache.

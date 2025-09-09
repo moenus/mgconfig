@@ -17,7 +17,6 @@ Main components:
 
 from typing import Callable, Optional, Any, Union, Iterator
 from dataclasses import dataclass
-import yaml
 from .config_types import ConfigTypes
 from .extension_system import DefaultFunctions, DefaultValues
 import keyword

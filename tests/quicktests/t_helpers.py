@@ -5,7 +5,7 @@ import os
 import shutil
 from pathlib import Path
 from mgconfig import Configuration, DefaultValues
-from mgconfig.secure_store_helpers import generate_key_str
+from mgconfig.sec_store_crypt import generate_master_key_str as generate_key_str
 
 
 CONFIG_DEFINITIONS_YAML = [

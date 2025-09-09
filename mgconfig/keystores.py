@@ -1,7 +1,6 @@
 # Copyright (c) 2025 moenus
 # SPDX-License-Identifier: MIT
 
-from .config_key_map import ConfigKeyMap, SEC
 from typing import Any, Dict, Optional, Sequence
 from .keystore_classes import KeyStore, KeyStoreFile, KeyStoreKeyring, KeyStoreEnv
 
@@ -9,7 +8,7 @@ from .keystore_classes import KeyStore, KeyStoreFile, KeyStoreKeyring, KeyStoreE
 class KeyStores:
     """Registry of available keystore instances.
 
-    This class is by purpose not thread save
+    This class is by purpose not thread save. If used in a multi-threading environment it requeires external syncronization.
 
     Provides a global container for keystore instances and helper
     methods to add, retrieve, and interact with them.
@@ -33,7 +32,7 @@ class KeyStores:
         cls._ks_dict[ks.keystore_name] = ks
 
     @classmethod
-    def get(cls, name: str) -> Optional[KeyStore]:
+    def get(cls, keystore_name: str) -> Optional[KeyStore]:
         """Retrieve a registered keystore.
 
         Args:
@@ -42,7 +41,8 @@ class KeyStores:
         Returns:
             Optional[KeyStore]: The keystore instance, or None if not found.
         """
-        return cls._ks_dict.get(name)
+        cls.check_keystore(keystore_name)
+        return cls._ks_dict.get(keystore_name)
 
     @classmethod
     def get_key(cls, keystore_name: str, item_name: str) -> Optional[str]:
@@ -92,7 +92,7 @@ class KeyStores:
 
 
     @classmethod
-    def check_keystore(cls, keystore_name: str):
+    def check_keystore(cls, keystore_name: str) -> None:
         """Validate that a keystore is registered.
 
         Args:
@@ -106,14 +106,15 @@ class KeyStores:
                 f'Invalid keystore name {keystore_name}')
 
     @classmethod
-    def list_keystores(cls) -> Sequence[str]:
+    def list_keystores(cls) -> list[str]:
         """List names of registered keystores.
 
         Returns:
             Sequence[str]: List of registered keystore names.
         """        
         return list(cls._ks_dict.keys())
-    
+
+
 
 KeyStores.add(KeyStoreEnv())
 KeyStores.add(KeyStoreFile())

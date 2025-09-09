@@ -6,9 +6,10 @@ from .config_defs import ConfigDefs, ConfigDef
 from typing import Any, Optional
 from .value_stores import ValueStoreFile, ValueStoreSecure, ValueStoreEnv, ValueStoreDefault, ConfigValueSource
 import re
-from .config_logger import config_logger
 from .config_items import config_items, ConfigItem, config_items_new
 
+import logging
+logger = logging.getLogger(__name__)
 
 class ConfigItemHandler:
 
@@ -43,7 +44,7 @@ class ConfigItemHandler:
 
         result, parsed_value = ConfigTypes.parse_value(
             value_src, cfg_def.config_type)
-        config_logger.debug(
+        logger.debug(
             f'Configuration [{cfg_def.config_id}]: value: {value_src} --[{cfg_def.config_type}]--> {parsed_value}')
         if not result:
             raise ValueError(
@@ -115,13 +116,13 @@ class ConfigItemHandler:
             ValueStoreSecure().save_value(
                 cfg_def.config_id, output)
             source = ConfigValueSource.ENCRYPT
-            config_logger.info(
+            logger.info(
                 f'Secret value for id {config_id} was changed.')
         else:
             ValueStoreFile().save_value(
                 config_id, output)
             source = ConfigValueSource.CFGFILE
-            config_logger.info(
+            logger.info(
                 f'Configuration [{config_id}]: value was changed from [{config_items.get(config_id)}] to [{new_value}]')
         if apply_immediately:
             config_items.set(config_id, ConfigItem(

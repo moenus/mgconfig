@@ -4,7 +4,7 @@
 from mgconfig.key_provider import KeyProvider
 from pathlib import Path
 import json
-from mgconfig.secure_store_helpers import generate_key_str
+from mgconfig.sec_store_crypt import generate_master_key_str as generate_key_str
 from tests.quicktests.t_helpers import get_test_filepath, prepare_clean_basedir
 import keyring
 import os

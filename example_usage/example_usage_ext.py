@@ -1,12 +1,13 @@
 # Copyright (c) 2025 moenus
 # SPDX-License-Identifier: MIT
 
-from mgconfig import Configuration, DefaultValues, PostProcessing, DefaultFunctions, ConfigTypes, config_logger
+from mgconfig import Configuration, DefaultValues, PostProcessing, DefaultFunctions, ConfigTypes
 from ext_default_functions import default_hostname, default_timezone
 from ext_postprocessing import extend_timezone_configuration, LOCAL_TZ_ID
 from ext_config_types import parse_filename
 import logging
 
+logger = logging.getLogger(__name__)
 
 CONFIG_DEFINITIONS_YAML = [
     "config_defs/config_def__app.yml",
@@ -23,13 +24,6 @@ ConfigTypes.add_type('seconds', int,
                      ConfigTypes._parse_int_positive, str, None)
 ConfigTypes.add_type('filename', str, parse_filename, None, None)
 
-
-# ---------------------------------------------------------------------
-# application logger example
-# ---------------------------------------------------------------------
-logging.basicConfig(level=logging.INFO)
-app_logger = logging.getLogger("example_usage")
-config_logger.replace_logger(app_logger)
 
 # # ---------------------------------------------------------------------
 # # default values - example
@@ -57,11 +51,11 @@ config = Configuration(CONFIG_DEFINITIONS_YAML)
 # checking specific post-processing results
 # ---------------------------------------------------------------------
 if LOCAL_TZ_ID in config:
-    app_logger.info(
+    logger.info(
         f'Local timezone: {config.get_value(LOCAL_TZ_ID).zone}')
     # value of 'local_tz' can be directly accessed as property using config.extended.local_tz
 else:
-    app_logger.info(
+    logger.info(
         f'Configuration value for "{LOCAL_TZ_ID}" was not found.')
 
 print(ConfigTypes.list_all())

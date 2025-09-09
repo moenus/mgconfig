@@ -29,7 +29,7 @@
 # -----------------------------------------------------------------------------
 
 from .config_key_map import ConfigKeyMap
-from .config_logger import config_logger
+# from .config_logger import config_logger
 from .extension_system import DefaultValues, DefaultFunctions, PostProcessing
 from .configuration import Configuration
 from .config_types import ConfigTypes
@@ -37,7 +37,7 @@ from .value_stores import get_new_masterkey
 import logging
 
 __version__ = "0.1.2"
-config_logger.setLevel(logging.INFO)
+# config_logger.setLevel(logging.INFO)
 
 # configuration_logger = config_logger 
 

@@ -3,14 +3,13 @@
 
 import keyring
 import os
-import tempfile
-import json
+
 from pathlib import Path
 from .config_key_map import ConfigKeyMap, SEC
-from .config_logger import config_logger
 from typing import Any, Dict, Optional, Sequence
 from .config_items import config_items
 from .file_cache import FileCache, FileFormat, FileMode
+
 
 config_keyfile = ConfigKeyMap(SEC, 'keyfile_filepath')
 config_service_name = ConfigKeyMap(SEC, 'keyring_service_name')

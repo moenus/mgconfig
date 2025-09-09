@@ -2,9 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 import os
-import yaml
 from .config_key_map import ConfigKeyMap, APP, SEC
-from .config_logger import config_logger
 from .singleton_meta import SingletonMeta
 from .secure_store import SecureStore
 from .key_provider import KeyProvider
@@ -16,6 +14,8 @@ from abc import abstractmethod
 from .config_items import config_items
 from .file_cache import FileCache, FileFormat, FileMode
 
+import logging
+logger = logging.getLogger(__name__)
 
 config_configfile = ConfigKeyMap(APP, 'configfile')
 config_securestorefile = ConfigKeyMap(SEC, 'securestore_file')
@@ -98,12 +98,12 @@ class ValueStoreSecure(ValueStore):
         try:
             secure_store = self._get_new_secure_store()
             if not secure_store.validate_master_key():
-                config_logger.info(
+                logger.info(
                     'Secure store corrupted or master key invalid.')
             else:
-                config_logger.info('Secure store successfully initialized.')
+                logger.info('Secure store successfully initialized.')
         except Exception as e:
-            config_logger.error(f'Cannot initialize secure store: {e}')
+            logger.error(f'Cannot initialize secure store: {e}')
 
     def _get_new_secure_store(self) -> SecureStore:
         """Creates a new `SecureStore` instance.
@@ -130,10 +130,10 @@ class ValueStoreSecure(ValueStore):
             secure_store = self._get_new_secure_store()
             secure_store.store_secret(item_id, value)
             secure_store._ssf_save()
-            config_logger.info(f'Secret {item_id} saved to keystore.')
+            logger.info(f'Secret {item_id} saved to keystore.')
             return True
         except Exception as e:
-            config_logger.error(
+            logger.error(
                 f'Cannot store secret value for id {item_id}: {e}')
         return False
 
@@ -151,7 +151,7 @@ class ValueStoreSecure(ValueStore):
             secure_store = self._get_new_secure_store()
             return secure_store.retrieve_secret(item_id), self._source
         except Exception as e:
-            config_logger.error(
+            logger.error(
                 f'Cannot retrieve secret value for id {item_id}: {e}')
             return None, self._source
 
@@ -165,9 +165,9 @@ class ValueStoreSecure(ValueStore):
             secure_store = self._get_new_secure_store()
             new_masterkey_str = secure_store.prepare_auto_key_exchange()
         except Exception as e:
-            config_logger.error(f'Cannot prepare new master key: {e}')
+            logger.error(f'Cannot prepare new master key: {e}')
             return None
-        config_logger.info(
+        logger.info(
             'New master key generated. Auto-key-exchange prepared.')
         return new_masterkey_str
 
@@ -216,8 +216,12 @@ class ValueStoreFile(ValueStore):
         if config_section not in data:
             data[config_section] = {}
         data[config_section][config_name] = value
-        return self.file_cache.save()
-
+        try:
+            self.file_cache.save()
+            return True
+        except Exception as e:
+            logger.error(f'Cannot save configuration value: {e}')
+            return False
 
 class ValueStoreEnv(ValueStore):
     """Value store that retrieves configuration values from environment variables."""

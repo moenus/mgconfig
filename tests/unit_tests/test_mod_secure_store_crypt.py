@@ -10,7 +10,7 @@ from mgconfig.secure_store import (
     ITEMNAME_CIPHERTEXT,
     ITEMNAME_NONCE,
 )
-from mgconfig.secure_store_helpers import generate_key_str
+from mgconfig.sec_store_crypt import generate_master_key_str as generate_key_str
 
 
 class DummyKeyProvider:

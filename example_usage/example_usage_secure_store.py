@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 from mgconfig.secure_store import SecureStore
-from mgconfig.secure_store_helpers import generate_key_str
+from mgconfig.sec_store_helpers import generate_key_str
 from pathlib import Path
 
 import os

@@ -1,6 +1,6 @@
 test-definitions:
-  bool: false
-  integer: 500
-  path: /dir/b.txt
   string: newstring
+  integer: 500
+  bool: false
   time: 09:11:25
+  path: /dir/b.txt

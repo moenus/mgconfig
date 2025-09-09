@@ -2,72 +2,31 @@
 # SPDX-License-Identifier: MIT
 
 
-import os
-import json
-import time
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from cryptography.hazmat.primitives import hmac as _hmac, hashes
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from pathlib import Path
-from mgconfig.config_logger import config_logger
 from mgconfig.key_provider import KeyProvider
-from cryptography.exceptions import InvalidTag
-from dataclasses import dataclass, fields
-from typing import Optional, Dict
-from .secure_store_helpers import bytes_to_b64str, b64str_to_bytes, hash_bytes, generate_key_str
-from enum import Enum
-from collections import namedtuple
-from .file_cache import FileCache, FileFormat
+from typing import Optional, Dict, Tuple
+from .sec_store_helpers import bytes_to_b64str, b64str_to_bytes
+from .file_cache import FileCache, FileFormat, FileMode
+from .sec_store_crypt import sec_encrypt, sec_decrypt, hash_bytes, generate_master_key_str
+from .sec_store_header import  SecurityHeader, new_header, create_header
 
-__version__ = 1  # is used in file header and info parameter
+import logging
+logger = logging.getLogger(__name__)
+
 
 # The implementation is not resistant to memory forensics.
 # There is by design no backup mechanism for the secure file on disk.
 # The master key is provided from a key store.
 
-# === Crypto Constants ===
-AES_KEY_SIZE = 32          # 32 bytes = 256 bits for AES-256
-NONCE_SIZE = 12    # 12 bytes = recommended nonce size for AES-GCM
-SALT_SIZE = 32  # 32 bytes = recommended salt size for HKDF
-
-KeyParams = namedtuple("KeyParams", ['name', 'alg', 'info', 'key_size'])
 
 
-class KeyType(Enum):
-    AES = KeyParams(name='aes',
-                    alg='AESGCM',
-                    info=b"SecureStore|enc-key|v"+str(__version__).encode(),
-                    key_size=32)
-    MAC = KeyParams(name='mac',
-                    alg='HMAC-SHA256',
-                    info=b"SecureStore|mac-key|v"+str(__version__).encode(),
-                    key_size=32)
-
-
-KDF_ALG = "HKDF-SHA256"
 ITEMS_MAC_ALG = "HMAC-SHA256"
 
 # current master key encrypted with the new master key
 AUTO_EXCHANGE_OLD_MASTER_KEY = '_aemk_old_k'
 
-MAX_SECRET_LEN = 1000
-
 ITEMNAME_NONCE = 'n'
 ITEMNAME_CIPHERTEXT = 'ct'
-
-
-@dataclass
-class StoreHeader:
-    version: int
-    kdf: str
-    salt_b64: str
-    created_at: int
-    mk_hash: str
-    items_mac_b64: Optional[str] = None     # Base64(HMAC(items))
-    items_mac_alg: Optional[str] = ITEMS_MAC_ALG
-
-
-
 
 
 class SecureStore:
@@ -99,13 +58,14 @@ class SecureStore:
             key_provider (KeyProvider): Provides a Base64-encoded 'master_key'.
         """
         self.securestore_file = Path(securestore_file)
-        self._file_cache = FileCache(self.securestore_file, FileFormat.JSON)
+        self._file_cache = FileCache(
+            self.securestore_file, FileFormat.JSON, FileMode.ATOMIC_WRITE)
         self.master_key_str = key_provider.get('master_key')
-        self._salt = None  # loaded from file or generated
+        # self._salt = None  # loaded from file or generated
         self._mk_validated = False
         self._dirty = False
 
-        self._header: Optional[StoreHeader] = None
+        self._header: Optional[SecurityHeader] = None
         self._items: Dict[str, Dict[str, str]] = {}
 
         data = self._file_cache.data  # read implicit data file
@@ -133,27 +93,18 @@ class SecureStore:
 # --------------------------------------------------------------------------------
 
     def _ssf_load(self) -> None:
-        h = self._file_cache.data.get("_header", {})
-        for field in fields(StoreHeader):
-            if field.name not in h:
-                raise ValueError(f"SecureStore header missing '{field.name}'")
-        self._header = StoreHeader(**h)
-        self._salt = b64str_to_bytes(self._header.salt_b64)
+        self._header = create_header(self._file_cache.data.get("_header", {}))
+        # h = self._file_cache.data.get("_header", {})
+        # for field in fields(StoreHeader):
+        #     if field.name not in h:
+        #         raise ValueError(f"SecureStore header missing '{field.name}'")
+        # self._header = StoreHeader(**h)
 
         self._items = self._file_cache.data.get("items", {})
         self._dirty = False
 
     def _ssf_create(self) -> None:
-        self._salt = os.urandom(SALT_SIZE)  # public, random, per-store
-        self._header = StoreHeader(
-            version=__version__,
-            kdf=KDF_ALG,
-            salt_b64=bytes_to_b64str(self._salt),
-            created_at=int(time.time()),
-            mk_hash=self.master_key_hash,
-            items_mac_b64=None,
-            items_mac_alg=ITEMS_MAC_ALG
-        )
+        self._header = new_header(self._master_key)
         self._items = {}
         self._ssf_save(force=True)
 
@@ -165,56 +116,24 @@ class SecureStore:
         if not force and not self._dirty:
             return  # writing file skipped because not dirty and not forced
 
-        # always compute and set MAC
-        self._header.items_mac_b64 = self.compute_items_mac(self._items)
-        self._header.items_mac_alg = ITEMS_MAC_ALG
+        self._header.update_items_mac(self._items, self._master_key)
 
         self._file_cache.data["_header"] = self._header.__dict__
         self._file_cache.data["items"] = self._items
         self._file_cache.save()
-        
+
     def _ssf_delete(self) -> None:
         """Delete the secure store file and clear sensitive data from memory."""
         self._items.clear()
         self._header = None
-        self._salt = None
         if self.securestore_file.exists():
             self.securestore_file.unlink()
-        self._file_cache.clear()               
-
-# --------------------------------------------------------------------------------
-# derive keys
-# --------------------------------------------------------------------------------
-
-    def _key(self, key_type: KeyType) -> bytes:
-        """Derive a key from the master key using HKDF-SHA256.
-
-        Returns:
-            bytes: Derived key of requested key type.
-        """
-        key_params = key_type.value
-        hkdf = HKDF(algorithm=hashes.SHA256(), length=key_params.key_size,
-                    salt=self._salt, info=key_params.info)
-        return hkdf.derive(self._master_key)
+        self._file_cache.clear()
 
 
 # --------------------------------------------------------------------------------
 # other functions
 # --------------------------------------------------------------------------------
-
-
-    def _aad(self, name: str) -> bytes:
-        """Construct additional authenticated data (AAD) for AEAD encryption.
-
-        Binds store version, salt, master key hash, and entry name to prevent tampering.
-
-        Args:
-            name (str): Secret entry name.
-
-        Returns:
-            bytes: Encoded AAD string.
-        """
-        return f"SecureStore:v{self._header.version}|{self._header.salt_b64}|{self._header.mk_hash}|{name}".encode()
 
     def validate_master_key(self) -> bool:
         """Validate the current master key against the stored hash.
@@ -235,15 +154,8 @@ class SecureStore:
                 "SecureStore integrity check failed (items MAC missing)")
 
         if self._header.mk_hash == self.master_key_hash:
-            if not self._header.items_mac_b64:
-                raise ValueError(
-                    "SecureStore integrity check failed (items MAC missing)")
-
-            if not self.verify_items_mac(self._items, self._header.items_mac_b64):
-                raise ValueError(
-                    "SecureStore integrity check failed (items MAC mismatch)")
-            else:
-                return True
+            self._header.verify_items_mac(self._items, self._master_key)                 
+            return True
 
         old_master_key_str = self.retrieve_secret(AUTO_EXCHANGE_OLD_MASTER_KEY)
         if old_master_key_str is None or self._header.mk_hash != hash_bytes(b64str_to_bytes(old_master_key_str)):
@@ -252,9 +164,7 @@ class SecureStore:
         new_master_keystr = self.master_key_str
         self.master_key_str = old_master_key_str
 
-        if not self.verify_items_mac(self._items, self._header.items_mac_b64):
-            raise ValueError(
-                "SecureStore integrity check failed (items MAC mismatch)")
+        self._header.verify_items_mac(self._items, self._master_key)    
 
         return self._auto_key_exchange(new_master_keystr)
 
@@ -275,14 +185,8 @@ class SecureStore:
         Raises:
             ValueError: If the secret exceeds MAX_SECRET_LEN.
         """
-        value_bytes = str(value).encode("utf-8")
-        if len(value_bytes) > MAX_SECRET_LEN:
-            raise ValueError("value too large")
-        key = self._key(KeyType.AES)
-        nonce = os.urandom(NONCE_SIZE)
-        ct = AESGCM(key).encrypt(nonce, value_bytes, self._aad(name))
-        self._items[name] = {ITEMNAME_NONCE: bytes_to_b64str(
-            nonce), ITEMNAME_CIPHERTEXT: bytes_to_b64str(ct)}
+        nonce, ct = sec_encrypt(name, value, self._master_key, self._header.version, self._header.salt_b64,self._header.mk_hash)
+        self._items[name] = {ITEMNAME_NONCE: nonce, ITEMNAME_CIPHERTEXT: ct}        
         self._dirty = True
 
     def retrieve_secret(self, name: str) -> Optional[str]:
@@ -300,16 +204,9 @@ class SecureStore:
         if not entry:
             return None
         try:
-            key = self._key(KeyType.AES)
-            nonce = b64str_to_bytes(entry[ITEMNAME_NONCE])
-            ct = b64str_to_bytes(entry[ITEMNAME_CIPHERTEXT])
-            pt = AESGCM(key).decrypt(nonce, ct, self._aad(name))
-            return pt.decode("utf-8")
-        except InvalidTag as e:
-            config_logger.error(f"Decryption failed for {name}: {e}")
-            return None
+            return sec_decrypt(name, self._master_key, self._header.version, self._header.salt_b64,self._header.mk_hash, entry[ITEMNAME_NONCE], entry[ITEMNAME_CIPHERTEXT])
         except Exception as e:
-            config_logger.error("Unexpected decryption error")
+            logger.error(f"Decryption failed for {name}: {e}")
             return None
 
     def delete_secret(self, name: str) -> bool:
@@ -362,17 +259,17 @@ class SecureStore:
         Returns:
             str: New master key (Base64 encoded).
         """
-        config_logger.info(f'Prepare auto_key_exchange ...')
+        logger.info(f'Prepare auto_key_exchange ...')
 
         current_mk_str = self.master_key_str
-        new_master_key_str = generate_key_str()
+        new_master_key_str = generate_master_key_str()
 
         self.master_key_str = new_master_key_str
         self.store_secret(AUTO_EXCHANGE_OLD_MASTER_KEY, current_mk_str)
 
         self.master_key_str = current_mk_str
         self._ssf_save(force=True)
-        config_logger.info(f'... auto_key_exchange prepared.')
+        logger.info(f'... auto_key_exchange prepared.')
         return new_master_key_str
 
     def _auto_key_exchange(self, new_master_key_str: str) -> bool:
@@ -384,7 +281,7 @@ class SecureStore:
         Returns:
             bool: True on success, False otherwise.
         """
-        config_logger.info('Exchange master key ...')
+        logger.info('Exchange master key ...')
         self.delete_secret(AUTO_EXCHANGE_OLD_MASTER_KEY)
         unencrypted_values = self.retrieve_all_secrets()
 
@@ -392,7 +289,7 @@ class SecureStore:
         self._header.mk_hash = self.master_key_hash
         self.store_all_secrets(unencrypted_values)
         self._ssf_save(force=True)
-        config_logger.info('Master key successfully exchanged.')
+        logger.info('Master key successfully exchanged.')
         return True
 
 # --------------------------------------------------------------------------------
@@ -407,7 +304,7 @@ class SecureStore:
             unencrypted_values (dict[str, str]): Mapping of names to plaintext values.
         """
 
-        config_logger.debug('store all secrets')
+        logger.debug('store all secrets')
         for key in unencrypted_values:
             self.store_secret(key, str(unencrypted_values[key]))
 
@@ -417,7 +314,7 @@ class SecureStore:
         Returns:
             dict: Mapping of entry names to plaintext values.
         """
-        config_logger.debug('retrieve all secrets')
+        logger.debug('retrieve all secrets')
         unencrypted = {}
         for key in self._items:
             value = self.retrieve_secret(key)
@@ -425,40 +322,3 @@ class SecureStore:
                 unencrypted[key] = value
         return unencrypted
 
-# --------------------------------------------------------------------------------
-# functions for HMAC creation and validation
-# --------------------------------------------------------------------------------
-
-    @staticmethod
-    def _canonicalize_items(items: Dict[str, Dict[str, str]]) -> bytes:
-        """Canonical JSON for deterministic HMAC (sorted keys, tight separators)."""
-        return json.dumps(items, ensure_ascii=False, sort_keys=True,
-                          separators=(",", ":")).encode("utf-8")
-
-    def compute_items_mac(self, items: Dict[str, Dict[str, str]]) -> str:
-        """Compute an integrity HMAC over all items for integrity protection.
-        
-        Args:
-            items (dict[str, dict[str, str]]): Items to be protected.
-
-        Returns:
-            str: Base64-encoded HMAC-SHA256 over the canonicalized items.
-        """        
-        mac_key = self._key(KeyType.MAC)
-        h = _hmac.HMAC(mac_key, hashes.SHA256())
-        h.update(self._canonicalize_items(items))
-        mac = h.finalize()
-        return bytes_to_b64str(mac)
-
-    def verify_items_mac(self, items: Dict[str, Dict[str, str]], mac_b64: str) -> bool:
-        """Verify the HMAC over all items; returns True if valid, False otherwise."""
-        if not mac_b64:
-            return False
-        mac_key = self._key(KeyType.MAC)
-        h = _hmac.HMAC(mac_key, hashes.SHA256())
-        h.update(self._canonicalize_items(items))
-        try:
-            h.verify(b64str_to_bytes(mac_b64))
-            return True
-        except Exception:
-            return False

@@ -8,7 +8,7 @@ from mgconfig.config_item_handler import ConfigItemHandler
 import gc
 import sys
 from collections import Counter
-from mgconfig import config_logger
+from . import config_logger
 import logging
 
 CONFIG_DEFINITIONS_YAML = [

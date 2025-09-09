@@ -7,10 +7,11 @@ from .config_items import config_items, config_items_new
 from .config_item_handler import ConfigItem, ConfigItemHandler
 from .extension_system import PostProcessing
 from typing import Any, Dict, Mapping, Sequence, Optional, Union
-from .config_logger import config_logger
 from .singleton_meta import SingletonMeta
 from types import MappingProxyType
 
+import logging
+logger = logging.getLogger(__name__)
 
 class Configuration(metaclass=SingletonMeta):
     """
@@ -54,7 +55,7 @@ class Configuration(metaclass=SingletonMeta):
             try:
                 pp_func(self)
             except Exception as e:
-                config_logger.error(
+                logger.error(
                     f"Post processing function {pp_func.__name__} failed: {e}")
 
     def get_value(self, config_id: str, fail_on_error: bool = False) -> Any:

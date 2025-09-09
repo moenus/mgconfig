@@ -8,14 +8,16 @@ from dataclasses import asdict
 
 
 class ConfigItem():
-    def __init__(self, cfg_def: ConfigDef, value: Optional[Any] = None, source: Optional[str] = None, new:bool = False) -> None:
-        """
-        Initialize a ConfigValue.
+    """Represents a configuration entry with metadata and a value."""
+
+    def __init__(self, cfg_def: ConfigDef, value: Optional[Any] = None, source: Optional[str] = None, new: bool = False) -> None:
+        """Initialize a ConfigItem.
 
         Args:
-            cfg_def (ConfigDef): Configuration definition object containing ID, type, and defaults.
-            value_src (Any, optional): Initial raw value source (env, file, secret, etc.).
-            source (str, optional): Description of the source (e.g., 'env', 'file', 'default').
+            cfg_def (ConfigDef): Configuration definition containing ID, type, defaults, etc.
+            value (Any, optional): Initial value for this configuration item. Defaults to None.
+            source (str, optional): Description of the value source (e.g., "env", "file", "default"). Defaults to None.
+            new (bool, optional): Whether the value is newly added. Defaults to False.
         """
         # self._cfg_def = cfg_def
         self.value = value
@@ -26,36 +28,46 @@ class ConfigItem():
                 setattr(self, k, v)
 
     def __str__(self) -> str:
-        """
-        Return the current value formatted for display.
+        """Return the current value formatted for display.
 
         Returns:
-            str: Current value as string.
+            str: Display representation of the current value.
         """
         return ConfigTypes.display_value(self.value, self.config_type)
 
     @property
-    def value_str(self):
+    def value_str(self) -> str:
+        """String representation of the current value.
+
+        Returns:
+            str: Value as string.
+        """
         return str(self)
 
     @property
-    def source_str(self):
+    def source_str(self) -> str:
+        """String representation of the value source.
+
+        Returns:
+            str: Source name (e.g., "env", "file", "default") or "new" if marked as new.
+        """
         return str(self.source) if not self.new else 'new'
 
     @property
-    def readonly_flag(self):
+    def readonly_flag(self) -> str:
+        """Read-only indicator for the configuration item.
+
+        Returns:
+            str: "ro" if the config is read-only, otherwise "rw".
+        """
         return 'ro' if self.config_readonly else 'rw'
 
     def get_display_dict(self) -> Dict[str, str]:
-        """Build a row representing a configuration value and metadata.
-
-        Args:
-            config_def (ConfigDef): The configuration definition object.
-            value_str (str): The string representation of the value.
-            source (str): The source of the value (e.g., "env", "file", "new").
+        """Build a dict representing the configuration metadata and value.
 
         Returns:
-            List[Any]: A row containing configuration metadata and value.
+            Dict[str, str]: Dictionary with configuration metadata (ID, name, section, etc.),
+            source, flags, and value string.
         """
         return {
             'config_id': self.config_id,
@@ -73,30 +85,70 @@ class ConfigItem():
 
 
 class ConfigItems(dict):
+    """Collection of configuration items (dict-like)."""
 
-    """
-    Acts as a collection (dict-like) of ConfigValue.
+    def set(self, key: str, item: ConfigItem) -> None:
+        """Set a configuration item.
 
-    """
+        Args:
+            key (str): Configuration key.
+            item (ConfigItem): Configuration item to store.
 
-    def set(self, key: str, item: ConfigItem):
+        Raises:
+            TypeError: If the provided item is not a ConfigItem.
+        """
         if not isinstance(item, ConfigItem):
-            raise KeyError(f'Item for configuration key {key} invalid.')
+            raise TypeError(f'Item for configuration key {key} invalid.')
         self[key] = item
 
-    def get(self, key, fail_on_error=False) -> Optional[Any]:
+    def get(self, key: str, fail_on_error: bool = False) -> Optional[ConfigItem]:
+        """Retrieve a configuration item.
+
+        Args:
+            key (str): Configuration key.
+            fail_on_error (bool, optional): If True, raise an error when key is not found.
+                Defaults to False.
+
+        Returns:
+            Optional[ConfigItem]: The configuration item if found, otherwise None.
+
+        Raises:
+            KeyError: If the key is not found and fail_on_error is True.
+        """
         if key in self:
             return self[key]
         if fail_on_error:
             raise KeyError(
                 f'Item for configuration key {key} not found.')
 
-    def get_value(self, key, default=None, fail_on_error=False) -> Optional[Any]:
-        item = self.get(key,fail_on_error)
+    def get_value(self, key: str, default: Any = None, fail_on_error: bool = False) -> Any:
+        """Retrieve the value of a configuration item.
+
+        Args:
+            key (str): Configuration key.
+            default (Any, optional): Default value if key is not found. Defaults to None.
+            fail_on_error (bool, optional): If True, raise an error when key is not found.
+                Defaults to False.
+
+        Returns:
+            Any: The configuration value if found, otherwise the default.
+
+        Raises:
+            KeyError: If the key is not found and fail_on_error is True.
+        """
+        item = self.get(key, fail_on_error)
         if item:
             return item.value
         else:
-            return default    
+            return default
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Export only configuration values without metadata.
+
+        Returns:
+            Dict[str, Any]: Mapping of configuration key → value.
+        """
+        return {key: item.value for key, item in self.items()}     
 
 
 config_items = ConfigItems()

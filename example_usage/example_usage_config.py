@@ -9,7 +9,7 @@ import shutil
 from mgconfig import Configuration, DefaultValues
 from mgconfig.config_defs import ConfigDefs
 from mgconfig.config_types import ConfigTypes
-from mgconfig.secure_store_helpers import generate_key_str
+from mgconfig.sec_store_crypt import generate_master_key_str
 from mgconfig.config_items import config_items, config_items_new
 
 
@@ -134,7 +134,7 @@ def configuration_values_print():
 
 
 if __name__ == '__main__':
-    os.environ["APP_KEY"] = generate_key_str()
+    os.environ["APP_KEY"] = generate_master_key_str()
     configuration_reading()
     configuration_changes()
     configuration_values_print()

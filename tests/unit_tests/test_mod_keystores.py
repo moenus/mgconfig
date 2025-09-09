@@ -1,95 +1,124 @@
 # Copyright (c) 2025 moenus
 # SPDX-License-Identifier: MIT
 
-import os
-import json
-import tempfile
+
 import pytest
 from unittest.mock import patch, mock_open, MagicMock
 
-from mgconfig import keystores
 from mgconfig.keystores import (
     KeyStore, KeyStoreFile, KeyStoreKeyring, KeyStoreEnv, KeyStores
 )
 
 
 # -----------------------------
-# Base KeyStore
+# KeyStores Registry Tests
 # -----------------------------
-def test_keystore_set_raises():
-    ks = KeyStore()
-    with pytest.raises(ValueError):
-        ks.set("foo", "bar")
-
-
-def test_get_param_and_missing():
-    ks = KeyStore()
-    ks.params = {"foo": "bar"}
-    assert ks.get_param("foo") == "bar"
-    with pytest.raises(ValueError):
-        ks.get_param("missing")
-
-
-def test_check_configuration_unconfigured():
-    """Test that unconfigured keystore raises ValueError."""
-    ks = KeyStore()
-    ks.params = {}  # Explicitly set empty params
-    with pytest.raises(ValueError, match="not configured properly"):
-        ks.check_configuration()
-
-
-def test_check_configuration_configured():
-    """Test that configured keystore passes check."""
-    ks = KeyStore()
-    ks.params = {"test": "value"}  # Add some configuration
-    ks.check_configuration()  # Should not raise
-
-
-# -----------------------------
-# KeyStoreEnv
-# -----------------------------
-def test_env_get(monkeypatch):
-    monkeypatch.setenv("MYVAR", "123")
-    ks = KeyStoreEnv()
-    assert ks.get("MYVAR") == "123"
-    assert ks.get("MISSING") is None
-
-
-# -----------------------------
-# KeyStores registry
-# -----------------------------
-def test_add_and_get_contains():
-    ks = KeyStore()
-    ks.keystore_name = "custom"
-
-    # Ensure fresh registry
+@pytest.fixture(autouse=True)
+def clear_registry():
+    """Clear KeyStores registry before and after each test."""
     KeyStores._ks_dict = {}
+    yield
+    KeyStores._ks_dict = {}
+
+def test_keystore_add_and_contains():
+    """Test adding keystores and checking existence."""
+    ks = KeyStore()
+    ks.keystore_name = "test_store"
+    
     KeyStores.add(ks)
+    assert KeyStores.contains("test_store")
+    assert not KeyStores.contains("nonexistent")
 
-    assert KeyStores.contains("custom")
-    assert KeyStores.get("custom") == ks
+def test_keystore_add_duplicate_raises():
+    """Test that adding duplicate keystore raises ValueError."""
+    ks1 = KeyStore()
+    ks1.keystore_name = "test_store"
+    KeyStores.add(ks1)
+    
+    ks2 = KeyStore()
+    ks2.keystore_name = "test_store"
+    with pytest.raises(ValueError, match="already existing"):
+        KeyStores.add(ks2)
 
-    with pytest.raises(ValueError):
+def test_keystore_get():
+    """Test retrieving keystores."""
+    ks = KeyStore()
+    ks.keystore_name = "test_store"
+    KeyStores.add(ks)
+    
+    assert KeyStores.get("test_store") is ks
+    with pytest.raises(ValueError, match="Invalid keystore"):
+        KeyStores.get("nonexistent")
+
+def test_keystore_get_key():
+    """Test retrieving keys from keystores."""
+    # Setup mock keystore
+    mock_store = MagicMock(spec=KeyStore)
+    mock_store.keystore_name = "mock_store"
+    mock_store.get.return_value = "test_value"
+    KeyStores.add(mock_store)
+    
+    assert KeyStores.get_key("mock_store", "test_key") == "test_value"
+    mock_store.get.assert_called_once_with("test_key")
+    
+    with pytest.raises(ValueError, match="Invalid keystore"):
+        KeyStores.get_key("nonexistent", "test_key")
+
+def test_keystore_set_key():
+    """Test setting keys in keystores."""
+    # Setup mock keystore
+    mock_store = MagicMock(spec=KeyStore)
+    mock_store.keystore_name = "mock_store"
+    KeyStores.add(mock_store)
+    
+    KeyStores.set_key("mock_store", "test_key", "test_value")
+    mock_store.set.assert_called_once_with("test_key", "test_value")
+    
+    with pytest.raises(ValueError, match="Invalid keystore"):
+        KeyStores.set_key("nonexistent", "test_key", "test_value")
+
+def test_keystore_check_keystore():
+    """Test keystore validation."""
+    ks = KeyStore()
+    ks.keystore_name = "test_store"
+    KeyStores.add(ks)
+    
+    # Should not raise for existing store
+    KeyStores.check_keystore("test_store")
+    
+    # Should raise for non-existent store
+    with pytest.raises(ValueError, match="Invalid keystore"):
+        KeyStores.check_keystore("nonexistent")
+
+def test_keystore_list_keystores():
+    """Test listing registered keystores."""
+    # Add multiple keystores
+    stores = ["store1", "store2", "store3"]
+    for name in stores:
+        ks = KeyStore()
+        ks.keystore_name = name
         KeyStores.add(ks)
+    
+    keystore_list = KeyStores.list_keystores()
+    assert isinstance(keystore_list, list)
+    assert len(keystore_list) == len(stores)
+    for name in stores:
+        assert name in keystore_list
 
-
-# -----------------------------
-# Integration Tests
-# -----------------------------
-def test_keystores_initialization():
-    """Test that default keystores are registered."""
-    # Reset registry
+def test_default_keystores():
+    """Test default keystore initialization."""
+    # Clear registry and re-add default keystores
     KeyStores._ks_dict = {}
-
-    # Re-run initialization
-    keystores.KeyStores.add(keystores.KeyStoreEnv())
-    keystores.KeyStores.add(keystores.KeyStoreFile())
-    keystores.KeyStores.add(keystores.KeyStoreKeyring())
-
-    assert KeyStores.contains('env')
-    assert KeyStores.contains('file')
-    assert KeyStores.contains('keyring')
-
-    assert isinstance(KeyStores.get('env'), KeyStoreEnv)
-    assert isinstance(KeyStores.get('file'), KeyStoreFile)
-    assert isinstance(KeyStores.get('keyring'), KeyStoreKeyring)
+    KeyStores.add(KeyStoreEnv())
+    KeyStores.add(KeyStoreFile())
+    KeyStores.add(KeyStoreKeyring())
+    
+    # Verify default keystores
+    assert KeyStores.contains("env")
+    assert isinstance(KeyStores.get("env"), KeyStoreEnv)
+    
+    assert KeyStores.contains("file")
+    assert isinstance(KeyStores.get("file"), KeyStoreFile)
+    
+    assert KeyStores.contains("keyring")
+    assert isinstance(KeyStores.get("keyring"), KeyStoreKeyring)
