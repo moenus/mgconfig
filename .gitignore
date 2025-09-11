@@ -20,3 +20,5 @@ mgconfig.debug.txt
 
 temp_basedir/
 local/
+docs/_build/
+dist/
