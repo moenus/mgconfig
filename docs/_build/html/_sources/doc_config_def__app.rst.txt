@@ -1,0 +1,17 @@
+Configuration Definition Files
+==============================
+
+This page shows an example for a configuration definition file.
+
+config_def__app.yml
+-------------------
+
+.. literalinclude:: ../config_defs/config_def__app.yml
+   :language: YAML
+   :linenos:
+
+
+Further Reading
+---------------
+
+See the :doc:`doc_api` section for the full API reference.

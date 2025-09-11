@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extended Example &mdash; mgconfig V0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=fde8e45a"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Config Definition File - intermediate example" href="doc_config_def_2.html" />
+    <link rel="prev" title="Advanced Example" href="doc_example_3_advanced.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            mgconfig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../doc_introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc_introduction.html#known-bugs-and-limitations">Known Bugs and Limitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc_installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Usage Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="doc_example_1_basic.html">Basic Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_example_2_intermediate.html">Intermediate Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_example_3_advanced.html">Advanced Example</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Extended Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#further-reading">Further Reading</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="doc_config_def_2.html">Config Definition File - intermediate example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_config_def_3.html">Config Definition File - advanced example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_config_def_4.html">Config Definition File - extended example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_config_def__app.html">Config Definition File - application example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_config_def__app.html#config-def-app-yml">config_def__app.yml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#further-reading">Further Reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../doc_secure_store.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc_api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc_config_definition.html">Configuration Definition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc_tips_and_hints.html">Usage Tips and Hints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc_glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mgconfig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Usage Examples</a></li>
+      <li class="breadcrumb-item active">Extended Example</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/doc_example_4_extended.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="extended-example">
+<h1>Extended Example<a class="headerlink" href="#extended-example" title="Link to this heading"></a></h1>
+<p>This example shows:</p>
+<ul class="simple">
+<li><p>setting additional defaults at runtime</p></li>
+<li><p>setting default functions</p></li>
+<li><p>defining additional custom config types</p></li>
+<li><p>defining a post-processing pipeline</p></li>
+<li><p>adding custom config values at runtime</p></li>
+</ul>
+<p>Prepare the two needed <code class="docutils literal notranslate"><span class="pre">configuration</span> <span class="pre">definition</span> <span class="pre">files</span></code> to run this example:</p>
+<ul class="simple">
+<li><p>“example_2_intermediate.yaml” (See the <a class="reference internal" href="doc_example_2_intermediate.html"><span class="doc">Intermediate Example</span></a> section)</p></li>
+<li><p>“example_4_extended.yaml” (See the <a class="reference internal" href="#"><span class="doc">Extended Example</span></a> section)</p></li>
+</ul>
+<p>Run the following code example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">mgconfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">DefaultValues</span><span class="p">,</span> <span class="n">PostProcessing</span><span class="p">,</span> <span class="n">DefaultFunctions</span><span class="p">,</span> <span class="n">ConfigTypes</span><span class="p">,</span> <span class="n">prepare_temp_data_directory</span>
+<span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">ext_default_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_hostname</span><span class="p">,</span> <span class="n">default_timezone</span>
+<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">ext_postprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">extend_timezone_configuration</span><span class="p">,</span> <span class="n">LOCAL_TZ_ID</span>
+<span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">ext_config_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_filename</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="c1"># this function create a new and empty data directory for testing purposes</span>
+<span class="linenos"> 7</span><span class="n">prepare_temp_data_directory</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="n">CONFIG_DEFINITIONS_YAML</span> <span class="o">=</span> <span class="p">[</span>
+<span class="linenos">11</span>    <span class="s2">&quot;config_defs/config_def_2_intermediate.yaml&quot;</span><span class="p">,</span>
+<span class="linenos">12</span>    <span class="s2">&quot;config_defs/config_def_4_extended.yaml&quot;</span>
+<span class="linenos">13</span><span class="p">]</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">17</span><span class="c1"># # configuration types extension - examples</span>
+<span class="linenos">18</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">19</span><span class="n">ConfigTypes</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;minutes&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span>
+<span class="linenos">20</span>                     <span class="n">ConfigTypes</span><span class="o">.</span><span class="n">_parse_int_positive</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos">21</span><span class="n">ConfigTypes</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;seconds&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span>
+<span class="linenos">22</span>                     <span class="n">ConfigTypes</span><span class="o">.</span><span class="n">_parse_int_positive</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos">23</span><span class="n">ConfigTypes</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parse_filename</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span>
+<span class="linenos">26</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">27</span><span class="c1"># # default values - example</span>
+<span class="linenos">28</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">29</span><span class="n">DefaultValues</span><span class="p">()</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="linenos">30</span><span class="n">DefaultValues</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;app_name&#39;</span><span class="p">,</span> <span class="s1">&#39;Application_Name&#39;</span><span class="p">)</span>
+<span class="linenos">31</span>
+<span class="linenos">32</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">33</span><span class="c1"># # default functions - example</span>
+<span class="linenos">34</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">35</span><span class="n">DefaultFunctions</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;hostname&#39;</span><span class="p">,</span> <span class="n">default_hostname</span><span class="p">)</span>
+<span class="linenos">36</span><span class="n">DefaultFunctions</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;timezone&#39;</span><span class="p">,</span> <span class="n">default_timezone</span><span class="p">)</span>
+<span class="linenos">37</span>
+<span class="linenos">38</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">39</span><span class="c1"># # post-processing - example</span>
+<span class="linenos">40</span><span class="c1"># # ---------------------------------------------------------------------</span>
+<span class="linenos">41</span><span class="n">PostProcessing</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">extend_timezone_configuration</span><span class="p">)</span>
+<span class="linenos">42</span>
+<span class="linenos">43</span><span class="c1"># ---------------------------------------------------------------------</span>
+<span class="linenos">44</span><span class="c1"># configuration instance creation</span>
+<span class="linenos">45</span><span class="c1"># ---------------------------------------------------------------------</span>
+<span class="linenos">46</span><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="n">CONFIG_DEFINITIONS_YAML</span><span class="p">)</span>
+<span class="linenos">47</span>
+<span class="linenos">48</span><span class="c1"># ---------------------------------------------------------------------</span>
+<span class="linenos">49</span><span class="c1"># checking specific post-processing results</span>
+<span class="linenos">50</span><span class="c1"># ---------------------------------------------------------------------</span>
+<span class="linenos">51</span><span class="k">if</span> <span class="n">LOCAL_TZ_ID</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+<span class="linenos">52</span>    <span class="nb">print</span><span class="p">(</span>
+<span class="linenos">53</span>        <span class="sa">f</span><span class="s1">&#39;Local timezone: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">LOCAL_TZ_ID</span><span class="p">)</span><span class="o">.</span><span class="n">zone</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="linenos">54</span>    <span class="c1"># value of &#39;local_tz&#39; can be directly accessed as property using config.extended.local_tz</span>
+<span class="linenos">55</span><span class="k">else</span><span class="p">:</span>
+<span class="linenos">56</span>    <span class="nb">print</span><span class="p">(</span>
+<span class="linenos">57</span>        <span class="sa">f</span><span class="s1">&#39;Configuration value for &quot;</span><span class="si">{</span><span class="n">LOCAL_TZ_ID</span><span class="si">}</span><span class="s1">&quot; was not found.&#39;</span><span class="p">)</span>
+<span class="linenos">58</span>
+<span class="linenos">59</span><span class="nb">print</span><span class="p">(</span><span class="n">ConfigTypes</span><span class="o">.</span><span class="n">list_all</span><span class="p">())</span>
+</pre></div>
+</div>
+<section id="further-reading">
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<p>See the <a class="reference internal" href="../doc_api.html"><span class="doc">API Reference</span></a> section for the full API reference.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="doc_example_3_advanced.html" class="btn btn-neutral float-left" title="Advanced Example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="doc_config_def_2.html" class="btn btn-neutral float-right" title="Config Definition File - intermediate example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Moenus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

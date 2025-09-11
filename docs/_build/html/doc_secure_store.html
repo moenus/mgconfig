@@ -1,0 +1,211 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Considerations &mdash; mgconfig V0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=fde8e45a"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="doc_api.html" />
+    <link rel="prev" title="Config Definition File - application example" href="examples/doc_config_def__app.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            mgconfig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="doc_introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_introduction.html#known-bugs-and-limitations">Known Bugs and Limitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Usage Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Security Considerations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#salt">Salt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#key-storage-options">Key Storage Options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#system-keyring-recommended-for-desktop-systems">1. System Keyring (Recommended for Desktop Systems)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables">2. Environment Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#text-file-mounted-secret">3. Text File (Mounted Secret)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#key-lifecycle-management">Key Lifecycle Management</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#master-key">Master Key</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#known-limitations">Known Limitations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="doc_api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_config_definition.html">Configuration Definition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_tips_and_hints.html">Usage Tips and Hints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">mgconfig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Security Considerations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/doc_secure_store.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="security-considerations">
+<h1>Security Considerations<a class="headerlink" href="#security-considerations" title="Link to this heading"></a></h1>
+<p>The application stores configuration values of type <code class="docutils literal notranslate"><span class="pre">secret</span></code> inside a <code class="docutils literal notranslate"><span class="pre">keystore_file</span></code> in <strong>encrypted format</strong>.
+Encryption relies on two components:</p>
+<ul class="simple">
+<li><p><strong>Master Key</strong> – used to derive the actual encryption key for protecting secrets</p></li>
+<li><p><strong>Salt</strong> – adds randomness and uniqueness to encryption</p></li>
+</ul>
+<p>Both are critical to ensuring the <strong>confidentiality</strong> and <strong>integrity</strong> of stored data.</p>
+<section id="salt">
+<h2>Salt<a class="headerlink" href="#salt" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>A <strong>random value</strong> added to data before hashing (e.g., passwords).</p></li>
+<li><p>Prevents precomputed attacks (rainbow tables) and ensures uniqueness, even for identical inputs.</p></li>
+<li><p>Generated <strong>once during keystore_file creation</strong>.</p></li>
+<li><p>Stored in the <strong>keystore file header</strong> to allow decryption of encrypted values.</p></li>
+<li><p>Can be made public without creating a security risk</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="key-storage-options">
+<h2>Key Storage Options<a class="headerlink" href="#key-storage-options" title="Link to this heading"></a></h2>
+<p>The <strong>master key</strong> can be stored in one of three ways:</p>
+<section id="system-keyring-recommended-for-desktop-systems">
+<h3>1. System Keyring (Recommended for Desktop Systems)<a class="headerlink" href="#system-keyring-recommended-for-desktop-systems" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Uses the operating system’s secure credential store (e.g., <strong>Windows Credential Manager</strong>).</p></li>
+<li><p>Provides encrypted, user-specific storage managed by the OS.</p></li>
+<li><p>Key creation and updates can be handled automatically by the application.</p></li>
+<li><p>⚠️ <strong>Not supported in most Docker containers</strong> (no desktop session or GUI).</p></li>
+</ul>
+</section>
+<section id="environment-variables">
+<h3>2. Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Suitable for <strong>Docker containers</strong>, <strong>CI/CD pipelines</strong>, or local development/test setups.</p></li>
+<li><p>Secrets must be provided via Docker host configuration (<code class="docutils literal notranslate"><span class="pre">-e</span></code> flags, <code class="docutils literal notranslate"><span class="pre">.env</span></code> files, or injected securely).</p></li>
+<li><p>Key updates <strong>cannot be automated</strong> when running in Docker.</p></li>
+<li><p>Application reads environment variables <strong>only once at startup</strong>.</p></li>
+<li><p>⚠️ <strong>Caution</strong>: Environment variables can be exposed in process lists (<code class="docutils literal notranslate"><span class="pre">ps</span></code>), logs, or crash dumps. Avoid on shared or multi-tenant systems.</p></li>
+</ul>
+</section>
+<section id="text-file-mounted-secret">
+<h3>3. Text File (Mounted Secret)<a class="headerlink" href="#text-file-mounted-secret" title="Link to this heading"></a></h3>
+<ul>
+<li><p>Suitable for <strong>Docker containers</strong> or local development/test setups.</p></li>
+<li><p>Keys are stored in a <strong>plain text file</strong> on the host and mounted <strong>read-only</strong> into the container.</p></li>
+<li><p>🔁 Key updates <strong>must be handled manually</strong> (application cannot rotate keys in containers).</p></li>
+<li><p>Security relies on proper file handling:</p>
+<ul class="simple">
+<li><p>Use restrictive file permissions (e.g., <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">600</span></code>).</p></li>
+<li><p>Restrict host access to authorized users only.</p></li>
+<li><p>Exclude key files from version control and backups.</p></li>
+</ul>
+</li>
+<li><p>Example:</p>
+<p><code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">/host/keys/master_key:/app/secrets/master_key:ro</span></code></p>
+</li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="key-lifecycle-management">
+<h2>Key Lifecycle Management<a class="headerlink" href="#key-lifecycle-management" title="Link to this heading"></a></h2>
+<p>The application can generate a new <strong>master key</strong>, but <strong>automated storage of this key is only supported with the System Keyring</strong>.</p>
+<p>In Docker-based environments, generated keys must be <strong>manually transferred</strong> to the configured storage location (e.g., mounted file or environment variable).</p>
+<section id="master-key">
+<h3>Master Key<a class="headerlink" href="#master-key" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Generated <strong>during installation</strong> or when explicitly triggered.</p></li>
+<li><p>Should be rotated <strong>regularly</strong> (e.g., annually).</p></li>
+<li><p>Rotation is performed via the application using <code class="docutils literal notranslate"><span class="pre">mgconf</span></code>.</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="known-limitations">
+<h2>Known Limitations<a class="headerlink" href="#known-limitations" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>The implementation is <strong>not resistant to memory forensics</strong>.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples/doc_config_def__app.html" class="btn btn-neutral float-left" title="Config Definition File - application example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="doc_api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Moenus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+# mgconfig configuration definitions
+# for filesystem objects: files and directories:
+
+- section: directories
+  prefix: dir
+  configs:
+
+  - name: data
+    type: path
+    default: $(app_basedir)
+    env: DATA_DIRECTORY
+    description: data directory
+
+  - name: work
+    type: path
+    default: $(dir_data)/work
+    env: WORK_DIRECTORY
+    description: work directory
+
+  - name: log
+    type: path
+    default: $(dir_data)/log
+    env: LOG_DIRECTORY
+    description: log directory
+
+  - name: archive
+    type: path
+    default: $(dir_data)/archive
+    env: ARCHIVE_DIRECTORY
+    description: archive directory
+
+- section: filenames
+  prefix: filename
+  configs:
+
+  - name: log
+    type: filename
+    default: '$(app_name).log'
+    description: filename of log file
+
+- section: filepaths
+  prefix: fp
+  configs:
+
+  - name: log
+    type: path
+    default: '$(dir_logs)/$(fn_log)'
+    env: LOG_FILE
+    description: filepath of log file

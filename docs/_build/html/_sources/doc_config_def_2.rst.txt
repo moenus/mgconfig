@@ -1,0 +1,6 @@
+Config Definition Example - intermediate
+----------------------------------------
+
+.. literalinclude:: ../config_defs/cd_example_2_intermediate.yaml
+   :language: YAML
+   :linenos:

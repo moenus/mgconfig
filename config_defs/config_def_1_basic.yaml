@@ -1,0 +1,11 @@
+# mgconfig configuration definitions 
+# for basic example configuration
+
+- section: application
+  prefix: app
+  configs:
+  - name: test
+    type: str
+    readonly: True
+    default: teststring
+    description: this readonly configuration item is used to demonstrate the basic usage of mgconfig

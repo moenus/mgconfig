@@ -1,0 +1,42 @@
+# mgconfig configuration definitions 
+# for intermediate example configuration
+
+- section: application
+  prefix: app
+  configs:
+
+  - name: name
+    type: str
+    readonly: True
+    default: appname
+    description: name of the application (read only)
+
+  - name: basedir
+    type: path
+    readonly: True
+    default: /$(app_name)_data
+    env: DATA_DIRECTORY
+    description: base directory for application execution
+
+  - name: configdir
+    type: path
+    readonly: True
+    default: $(app_basedir)/configs
+    env: CONFIG_DIRECTORY
+    description: configuration directory
+
+  - name: configfile
+    type: path
+    readonly: True
+    default: $(app_configdir)/$(app_name)_config.yaml
+    env: CONFIGFILE
+    description: full pathname of configuration file
+
+- section: examples
+  prefix: tst
+  configs:
+
+  - name: name
+    type: str
+    default: original string
+    description: example for a read/write configuration item which can be read from and written to configuration file

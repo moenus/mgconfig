@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+
+# VSCode
+.vscode/
+
+# Others
+.DS_Store
+
+.coverage
+mgconfig.egg-info
+add_copyright.py
+mgconfig.debug.txt
+
+temp_basedir/
+local/

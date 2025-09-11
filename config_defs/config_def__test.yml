@@ -1,0 +1,44 @@
+# mgconfig configuration definitions 
+# for testing the config types 
+
+- section: test-definitions
+  prefix: tst
+  configs:
+
+  - name: string
+    type: str
+    default: teststring
+
+  - name: integer
+    type: int
+    default: 999
+
+  - name: float
+    type: float
+    default: 7.6
+
+  - name: bool
+    type: bool
+    default: True
+
+  - name: date
+    type: date
+    default: "2024-10-23"
+
+  - name: time
+    type: time
+    default: "14:30:00"
+
+  - name: path
+    type: path
+    default: /dir/a.txt
+
+  - name: secret
+    type: secret
+
+  - name: bytes
+    type: bytes
+
+  - name: hidden
+    type: hidden
+    default: hidden text

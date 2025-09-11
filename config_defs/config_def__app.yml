@@ -1,0 +1,71 @@
+# mgconfig configuration definitions 
+# for basic application configuration
+
+- section: application
+  prefix: app
+  configs:
+
+  - name: name
+    type: str
+    readonly: True
+    description: name of the application (read only)
+
+  - name: basedir
+    type: path
+    readonly: True
+    default: /$(app_name)_data
+    env: DATA_DIRECTORY
+    description: base directory for application execution
+
+  - name: configdir
+    type: path
+    readonly: True
+    default: $(app_basedir)/configs
+    env: CONFIG_DIRECTORY
+    description: configuration directory (read only)
+
+  - name: configfile
+    type: path
+    readonly: True
+    default: $(app_configdir)/$(app_name)_config.yaml
+    env: CONFIGFILE
+    description: full pathname of configuration file (read only)
+
+- section: secure_store
+  prefix: sec
+  configs:
+
+  - name: securestore_file
+    type: path
+    readonly: True
+    default: '$(app_configdir)/$(app_name)_sec.json'
+    env: SECURESTORE_FILE
+    description: filepath of secure store file
+
+  - name: master_key_keystore
+    type: str
+    readonly: True
+    default: env
+    description:
+
+
+  - name: master_key_item_name
+    type: str
+    readonly: True
+    default: APP_KEY
+    description: item name for master key for protection of secure storage (read only) (never displayed)
+
+  - name: keyring_service_name
+    type: str
+    readonly: True
+    env: KEYRING_SERVICE
+    default: mgconfig_test
+    description:
+
+
+  - name: keyfile_filepath
+    type: path
+    readonly: True
+    env: KEYFILE_PATH
+    default: $(app_basedir)/configs
+    description:

@@ -1,0 +1,37 @@
+# mgconfig configuration definitions 
+# for extended example configuration
+
+- section: application
+  prefix: app
+  configs:
+
+  - name: title
+    type: str
+    readonly: True
+    description: full title of the application (shown in web UI) (read only)
+
+  - name: version
+    type: str
+    readonly: True
+    description: version of the application (read only)
+
+  - name: prefix
+    type: str
+    readonly: True
+    description: abbreviation for the application which is used for URLs, file names, etc. (read only)
+
+- section: host
+  prefix: host
+  configs:
+
+  - name: timezone
+    type: str
+    env: TZ
+    default_function: timezone
+    description: timezone, which is used for timestamps and file datetimes
+
+  - name: hostname
+    type: str
+    env: APP_HOSTNAME
+    default_function: hostname
+    description: hostname, which is used to identify the instance of the app
