@@ -10,7 +10,8 @@ setup(
     description="A lightweight Python configuration system driven by declarative YAML definitions",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    packages=find_packages(),
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     install_requires=[
         "tzlocal>=5.0,<6.0",
         "PyYAML>=6.0,<7.0",

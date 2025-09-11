@@ -5,7 +5,7 @@ description = "A flexible, robust and extensible configuration package"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
-  { name = "Moenus", email = "moenus@example.com" }
+  { name = "Moenus", email = "99176998+moenus@users.noreply.github.com" }
 ]
 license = { text = "MIT" }
 classifiers = [
@@ -27,3 +27,6 @@ Issues = "https://github.com/moenus/mgconfig/issues"
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
