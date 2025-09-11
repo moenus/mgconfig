@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="mgconfig",
-    version="0.2.0", # Will be updated by bump2version
+    version="0.2.1-dev", # Will be updated by bump2version
     author="Michael Gross",
     description="A lightweight Python configuration system driven by declarative YAML definitions",
     long_description=open("README.md").read(),
