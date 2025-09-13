@@ -1,5 +1,5 @@
 # mgconfig  
-_A lightweight, declarative configuration system for Python applications_
+_A flexible, lightweight and declarative configuration system for Python applications_
 
 [![PyPI version](https://badge.fury.io/py/mgconfig.svg)](https://pypi.org/project/mgconfig/)  
 [![Python Versions](https://img.shields.io/pypi/pyversions/mgconfig.svg)](https://pypi.org/project/mgconfig/)  
@@ -63,7 +63,7 @@ app:
 ```
 
 ### Basic Usage Example
-⚠️ ⚠️ Values are accessed using the defined prefix (e.g. app) plus an underscore and the config name (e.g. app_test, app_timeout).
+⚠️ Values are accessed using the defined prefix (e.g. app) plus an underscore and the config name (e.g. app_test, app_timeout).
 
 ```python
 from mgconfig import Configuration

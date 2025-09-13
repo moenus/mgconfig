@@ -49,7 +49,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#configuration-types">Configuration Types</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#known-bugs-and-limitations">Known Bugs and Limitations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Usage Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="doc_secure_store.html">Security Considerations</a></li>
@@ -107,19 +106,6 @@
 <p>See section <a class="reference internal" href="examples/doc_example_4_extended.html"><span class="doc">Extended Example</span></a> for an example how to do add the following types:</p>
 <p>[‘minutes’, ‘seconds’, ‘filename’]</p>
 </section>
-</section>
-<section id="known-bugs-and-limitations">
-<h1>Known Bugs and Limitations<a class="headerlink" href="#known-bugs-and-limitations" title="Link to this heading"></a></h1>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code> type is used for missing values.</p>
-<p>Therefore setting a value to <code class="docutils literal notranslate"><span class="pre">None</span></code> will delete this value from the <code class="docutils literal notranslate"><span class="pre">configuration</span> <span class="pre">file</span></code> respectively from the <code class="docutils literal notranslate"><span class="pre">securestore</span> <span class="pre">file</span></code>. A default cannot be overwritten with <code class="docutils literal notranslate"><span class="pre">None</span></code> from a higher priority source.
-A value can only be None, if there is no default and the value was not set in the environment variables or one of the above mentiioned files.</p>
-</li>
-<li><p>The package is not thread-safe.</p>
-<p>As configuration values should be determined only once at application startup and changing configuration values is assumed to happen not very often, this might be acceptable for most use cases.
-If you need thread-safety it needs to be applied as a wrapper around the used mgconfig objects.</p>
-</li>
-</ul>
 </section>
 
 

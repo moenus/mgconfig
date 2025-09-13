@@ -13,5 +13,6 @@ This documentation describes the `mgconfig` package regarding installation, usag
    doc_secure_store
    doc_api
    doc_config_definition
+   doc_known_bugs_and_limitations
    doc_tips_and_hints
    doc_glossary
