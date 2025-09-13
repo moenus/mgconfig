@@ -7,5 +7,5 @@ from mgconfig import Configuration
 # configuration object creation
 config = Configuration('config_defs/config_def_1_basic.yaml')
 
-# alternative access posibility:
+# access configuration value
 print(f"Test configuration value: {config.app_test}")
