@@ -38,7 +38,7 @@ from .sec_store_crypt import generate_master_key_str
 import logging
 
 
-__version__ = "0.2.1-alpha"
+__version__ = "0.2.2-dev"
 
 # ---------------------------------------------------------------------
 # basic logging preparation

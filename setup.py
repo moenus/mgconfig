@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="mgconfig",
-    version="0.2.1-alpha",  # Will be updated by bump2version
+    version="0.2.2-dev",  # Will be updated by bump2version
     author="Moenus",
     description="A flexible, lightweight and declarative configuration system",
     long_description=long_description,
